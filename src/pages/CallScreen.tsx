@@ -98,7 +98,7 @@ export default function CallScreen() {
 
   const updateCallRecord = async (patch: Record<string, any>) => {
     if (!callId) return null;
-    const { data, error } = await supabase.from("calls").update(patch).eq("id", callId).select().maybeSingle();
+    const { data, error } = await supabase.from("calls").update(patch as any).eq("id", callId).select().maybeSingle();
     if (!error && data) {
       callRef.current = data;
       setCall(data);
