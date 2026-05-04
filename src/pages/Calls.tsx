@@ -6,9 +6,11 @@ import { Phone, Video, PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-
 import BottomNav from "@/components/BottomNav";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function Calls() {
   const { user } = useAuth();
+  const nav = useNavigate();
   const [calls, setCalls] = useState<any[]>([]);
 
   const load = async () => {
@@ -37,8 +39,12 @@ export default function Calls() {
 
   const callBack = async (other: any, type: "voice" | "video") => {
     if (!user || !other) return;
-    await supabase.from("calls").insert({ caller_id: user.id, callee_id: other.id, call_type: type, status: "initiated" });
-    toast.success(`${type === "video" ? "Video" : "Voice"} call started`);
+    const { data, error } = await supabase
+      .from("calls")
+      .insert({ caller_id: user.id, callee_id: other.id, call_type: type, status: "ringing" })
+      .select().single();
+    if (error || !data) return toast.error(error?.message || "Failed");
+    nav(`/call/${data.id}?role=caller`);
   };
 
   return (

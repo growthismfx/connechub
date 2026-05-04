@@ -32,6 +32,36 @@ export type Database = {
         }
         Relationships: []
       }
+      call_signals: {
+        Row: {
+          call_id: string
+          created_at: string
+          from_user: string
+          id: string
+          kind: string
+          payload: Json
+          to_user: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          from_user: string
+          id?: string
+          kind: string
+          payload: Json
+          to_user: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          from_user?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          to_user?: string
+        }
+        Relationships: []
+      }
       calls: {
         Row: {
           call_type: string

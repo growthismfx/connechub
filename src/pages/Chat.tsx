@@ -77,8 +77,13 @@ export default function Chat() {
 
   const startCall = async (call_type: "voice" | "video") => {
     if (!user || !other) return;
-    await supabase.from("calls").insert({ caller_id: user.id, callee_id: other.id, call_type, status: "initiated" });
-    toast.success(`${call_type === "video" ? "Video" : "Voice"} call started`);
+    const { data, error } = await supabase
+      .from("calls")
+      .insert({ caller_id: user.id, callee_id: other.id, call_type, status: "ringing" })
+      .select()
+      .single();
+    if (error || !data) return toast.error(error?.message || "Failed to start call");
+    nav(`/call/${data.id}?role=caller`);
   };
 
   return (
