@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       calls: {
         Row: {
           call_type: string
@@ -64,18 +82,21 @@ export type Database = {
           connected_via: string
           conversation_id: string
           joined_at: string | null
+          role: string
           user_id: string
         }
         Insert: {
           connected_via?: string
           conversation_id: string
           joined_at?: string | null
+          role?: string
           user_id: string
         }
         Update: {
           connected_via?: string
           conversation_id?: string
           joined_at?: string | null
+          role?: string
           user_id?: string
         }
         Relationships: [
@@ -115,6 +136,30 @@ export type Database = {
           last_message?: string | null
           last_message_at?: string | null
           name?: string | null
+        }
+        Relationships: []
+      }
+      friend_requests: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          status: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          status?: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          status?: string
+          to_user?: string
         }
         Relationships: []
       }
@@ -179,6 +224,10 @@ export type Database = {
           is_online: boolean | null
           last_seen: string | null
           name: string | null
+          read_receipts: boolean
+          show_last_seen: boolean
+          show_profile_photo: boolean
+          show_status: boolean
           status: string | null
           updated_at: string | null
           username: string | null
@@ -192,6 +241,10 @@ export type Database = {
           is_online?: boolean | null
           last_seen?: string | null
           name?: string | null
+          read_receipts?: boolean
+          show_last_seen?: boolean
+          show_profile_photo?: boolean
+          show_status?: boolean
           status?: string | null
           updated_at?: string | null
           username?: string | null
@@ -205,6 +258,10 @@ export type Database = {
           is_online?: boolean | null
           last_seen?: string | null
           name?: string | null
+          read_receipts?: boolean
+          show_last_seen?: boolean
+          show_profile_photo?: boolean
+          show_status?: boolean
           status?: string | null
           updated_at?: string | null
           username?: string | null
