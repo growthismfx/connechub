@@ -39,6 +39,7 @@ export type Database = {
           caller_id: string
           created_at: string
           duration_seconds: number | null
+          ended_at: string | null
           id: string
           status: string
         }
@@ -48,6 +49,7 @@ export type Database = {
           caller_id: string
           created_at?: string
           duration_seconds?: number | null
+          ended_at?: string | null
           id?: string
           status?: string
         }
@@ -57,6 +59,7 @@ export type Database = {
           caller_id?: string
           created_at?: string
           duration_seconds?: number | null
+          ended_at?: string | null
           id?: string
           status?: string
         }
