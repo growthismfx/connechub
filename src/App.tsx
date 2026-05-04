@@ -14,6 +14,8 @@ import Status from "./pages/Status";
 import Calls from "./pages/Calls";
 import Settings from "./pages/Settings";
 import Requests from "./pages/Requests";
+import CallScreen from "./pages/CallScreen";
+import IncomingCallListener from "./components/IncomingCallListener";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <IncomingCallListener />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -40,6 +43,7 @@ const App = () => (
             <Route path="/discover" element={<Protected><Discover /></Protected>} />
             <Route path="/status" element={<Protected><Status /></Protected>} />
             <Route path="/calls" element={<Protected><Calls /></Protected>} />
+            <Route path="/call/:callId" element={<Protected><CallScreen /></Protected>} />
             <Route path="/settings" element={<Protected><Settings /></Protected>} />
             <Route path="/requests" element={<Protected><Requests /></Protected>} />
             <Route path="*" element={<NotFound />} />

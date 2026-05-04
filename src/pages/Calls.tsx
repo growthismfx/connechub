@@ -6,9 +6,11 @@ import { Phone, Video, PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-
 import BottomNav from "@/components/BottomNav";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function Calls() {
   const { user } = useAuth();
+  const nav = useNavigate();
   const [calls, setCalls] = useState<any[]>([]);
 
   const load = async () => {
