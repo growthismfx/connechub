@@ -96,7 +96,11 @@ export default function Chat() {
           <div>
             <h2 className="font-bold leading-tight">{other?.name || "Chat"}</h2>
             <p className="text-xs text-muted-foreground">
-              {other?.is_online ? "online" : connectedVia === "phone" && other?.assigned_number ? `${other.country_code}${other.assigned_number}` : `@${other?.username || ""}`}
+              {other?.is_online
+                ? "online"
+                : connectedVia === "phone"
+                  ? `${other?.country_code || ""}${other?.assigned_number || ""}${other?.username ? ` · @${other.username}` : ""}`
+                  : `@${other?.username || ""}`}
             </p>
           </div>
         </div>

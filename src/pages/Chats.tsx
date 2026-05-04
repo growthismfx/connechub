@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Settings as SettingsIcon, Plus } from "lucide-react";
+import { Search, Settings as SettingsIcon, Plus, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { formatDistanceToNow } from "date-fns";
@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 export default function Chats() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const nav = useNavigate();
 
   const load = async () => {
@@ -50,11 +51,19 @@ export default function Chats() {
     })));
   };
 
+  const loadPending = async () => {
+    if (!user) return;
+    const { count } = await supabase.from("friend_requests").select("*", { count: "exact", head: true }).eq("to_user", user.id).eq("status", "pending");
+    setPendingCount(count || 0);
+  };
+
   useEffect(() => {
     load();
+    loadPending();
     const ch = supabase.channel("chats-list")
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "friend_requests" }, loadPending)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user]);
@@ -64,6 +73,12 @@ export default function Chats() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Chats</h1>
         <div className="flex gap-2">
+          <button onClick={() => nav("/requests")} className="relative w-11 h-11 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+            <UserPlus className="w-5 h-5" />
+            {pendingCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center text-white" style={{ background: "hsl(var(--destructive))" }}>{pendingCount}</span>
+            )}
+          </button>
           <button onClick={() => nav("/discover")} className="w-11 h-11 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
             <Plus className="w-5 h-5" />
           </button>
