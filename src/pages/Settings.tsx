@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, setBrowserNotificationsEnabled } from "@/lib/browserNotifications";
 
 export default function Settings() {
   const { profile, user, signOut, refreshProfile } = useAuth();
@@ -18,7 +19,7 @@ export default function Settings() {
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState(profile?.name || "");
   const [status, setStatus] = useState(profile?.status || "");
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(getBrowserNotificationsEnabled());
   const [readReceipts, setReadReceipts] = useState(true);
   const [showOnline, setShowOnline] = useState(true);
 
@@ -29,6 +30,27 @@ export default function Settings() {
     await refreshProfile();
     toast.success("Profile updated");
     setEditOpen(false);
+  };
+
+  const handleNotificationsToggle = async (enabled: boolean) => {
+    if (enabled) {
+      const result = await ensureBrowserNotificationPermission();
+      if (!result.supported) {
+        toast.error("Browser notifications are not supported here");
+        setNotifications(false);
+        return;
+      }
+      if (!result.granted) {
+        toast.error("Allow browser notifications to get message and call alerts");
+        setNotifications(false);
+        setBrowserNotificationsEnabled(false);
+        return;
+      }
+    }
+
+    setNotifications(enabled);
+    setBrowserNotificationsEnabled(enabled);
+    toast.success(enabled ? "Notifications enabled" : "Notifications disabled");
   };
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -84,7 +106,7 @@ export default function Settings() {
       </Section>
 
       <Section title="Notifications">
-        <Row icon={Bell} label="Push notifications" action={<Switch checked={notifications} onCheckedChange={setNotifications} />} />
+        <Row icon={Bell} label="Push notifications" action={<Switch checked={notifications} onCheckedChange={handleNotificationsToggle} />} />
       </Section>
 
       <Section title="Appearance">

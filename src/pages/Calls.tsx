@@ -7,6 +7,7 @@ import BottomNav from "@/components/BottomNav";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { createOrGetActiveCall } from "@/lib/callHelpers";
 
 export default function Calls() {
   const { user } = useAuth();
@@ -39,10 +40,7 @@ export default function Calls() {
 
   const callBack = async (other: any, type: "voice" | "video") => {
     if (!user || !other) return;
-    const { data, error } = await supabase
-      .from("calls")
-      .insert({ caller_id: user.id, callee_id: other.id, call_type: type, status: "ringing" })
-      .select().single();
+    const { data, error } = await createOrGetActiveCall({ callerId: user.id, calleeId: other.id, callType: type });
     if (error || !data) return toast.error(error?.message || "Failed");
     nav(`/call/${data.id}?role=caller`);
   };
