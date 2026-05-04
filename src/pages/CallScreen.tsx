@@ -279,6 +279,8 @@ export default function CallScreen() {
         await applyOffer(offer);
       }
     } catch (error: any) {
+      // Permission UI handles re-asking; keep the call alive so the user can retry.
+      if (permissionError) return;
       toast.error(error?.message || "Could not access microphone/camera");
       await endCall("rejected", true);
     }
@@ -321,6 +323,8 @@ export default function CallScreen() {
       await peer.setLocalDescription(offer);
       await sendSignal("offer", { type: offer.type, sdp: offer.sdp });
     } catch (error: any) {
+      // Permission error UI will handle retry — don't tear the call down.
+      if (permissionError) return;
       toast.error(error?.message || "Could not start the call");
       await endCall("ended", true);
     }
