@@ -1,12 +1,12 @@
 import { useAuth } from "@/hooks/useAuth";
-import Auth from "./Auth";
+import GetStarted from "./GetStarted";
 import UsernameSetup from "./UsernameSetup";
-import Home from "./Home";
+import Chats from "./Chats";
 
 export default function Index() {
   const { user, profile, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
-  if (!user) return <Auth />;
+  if (!user) return <GetStarted />;
   if (!profile?.username) return <UsernameSetup />;
-  return <Home />;
+  return <Chats />;
 }
