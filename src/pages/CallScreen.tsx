@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Phone, PhoneOff, Video, VideoOff } from "lucide-react";
 import { toast } from "sonner";
+import MediaPermissionPrompt from "@/components/MediaPermissionPrompt";
+import { requestMediaStream } from "@/lib/mediaPermissions";
 
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
@@ -41,6 +43,7 @@ export default function CallScreen() {
   const [hasAccepted, setHasAccepted] = useState(role === "caller");
   const [muted, setMuted] = useState(false);
   const [camOff, setCamOff] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
 
   const callRef = useRef<any>(null);
   const statusRef = useRef<CallUiState>(role === "caller" ? "calling" : "idle");
@@ -122,10 +125,12 @@ export default function CallScreen() {
   const ensureLocalStream = async () => {
     if (localStreamRef.current) return localStreamRef.current;
     const withVideo = callRef.current?.call_type === "video";
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: withVideo ? { width: 640, height: 480, facingMode: "user" } : false,
-    });
+    const { stream, error } = await requestMediaStream(withVideo);
+    if (!stream) {
+      setPermissionError(error || "Permission denied");
+      throw new Error(error || "Permission denied");
+    }
+    setPermissionError(null);
     localStreamRef.current = stream;
     if (withVideo && localVideoRef.current) localVideoRef.current.srcObject = stream;
     return stream;
@@ -274,6 +279,12 @@ export default function CallScreen() {
         await applyOffer(offer);
       }
     } catch (error: any) {
+      // Permission UI handles re-asking; keep the call alive so the user can retry.
+      if (permissionError) {
+        acceptedRef.current = false;
+        setHasAccepted(false);
+        return;
+      }
       toast.error(error?.message || "Could not access microphone/camera");
       await endCall("rejected", true);
     }
@@ -316,6 +327,11 @@ export default function CallScreen() {
       await peer.setLocalDescription(offer);
       await sendSignal("offer", { type: offer.type, sdp: offer.sdp });
     } catch (error: any) {
+      // Permission error UI will handle retry — don't tear the call down.
+      if (permissionError) {
+        offerSentRef.current = false;
+        return;
+      }
       toast.error(error?.message || "Could not start the call");
       await endCall("ended", true);
     }
@@ -544,6 +560,28 @@ export default function CallScreen() {
             <PhoneOff className="w-7 h-7" />
           </button>
         </div>
+      )}
+
+      {permissionError && (
+        <MediaPermissionPrompt
+          needVideo={isVideo}
+          errorMessage={permissionError}
+          onCancel={() => endCall("ended", true)}
+          onRetry={async () => {
+            setPermissionError(null);
+            try {
+              await ensureLocalStream();
+              if (role === "caller" && !offerSentRef.current) {
+                offerSentRef.current = false;
+                await startOutgoingCall();
+              } else if (role === "callee") {
+                await acceptIncoming();
+              }
+            } catch {
+              /* prompt will reopen via setPermissionError inside ensureLocalStream */
+            }
+          }}
+        />
       )}
     </div>
   );

@@ -11,6 +11,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, setBrowserNotificationsEnabled } from "@/lib/browserNotifications";
+import InstallAppButton from "@/components/InstallAppButton";
 
 export default function Settings() {
   const { profile, user, signOut, refreshProfile } = useAuth();
@@ -112,6 +113,16 @@ export default function Settings() {
       <Section title="Appearance">
         <Row icon={Palette} label="Theme" sub="Light" />
         <Row icon={Moon} label="Dark mode" action={<Switch />} />
+      </Section>
+
+      <Section title="Install">
+        <div className="p-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-medium text-sm">Install ConnectHub</p>
+            <p className="text-xs text-muted-foreground">Add the app to your home screen for full-screen access.</p>
+          </div>
+          <InstallAppButton />
+        </div>
       </Section>
 
       <Section title="Support">
