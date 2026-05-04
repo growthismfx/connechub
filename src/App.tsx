@@ -5,11 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 import Chats from "./pages/Chats";
 import Chat from "./pages/Chat";
 import StartChat from "./pages/StartChat";
 import Discover from "./pages/Discover";
-import Profile from "./pages/Profile";
+import Status from "./pages/Status";
+import Calls from "./pages/Calls";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -29,11 +32,14 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/chats" element={<Protected><Chats /></Protected>} />
             <Route path="/chat/new/:userId" element={<Protected><StartChat /></Protected>} />
             <Route path="/chat/:id" element={<Protected><Chat /></Protected>} />
             <Route path="/discover" element={<Protected><Discover /></Protected>} />
-            <Route path="/profile" element={<Protected><Profile /></Protected>} />
+            <Route path="/status" element={<Protected><Status /></Protected>} />
+            <Route path="/calls" element={<Protected><Calls /></Protected>} />
+            <Route path="/settings" element={<Protected><Settings /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

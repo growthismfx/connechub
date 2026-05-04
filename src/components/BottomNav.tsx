@@ -1,11 +1,11 @@
-import { Home, Compass, MessageCircle, User } from "lucide-react";
+import { MessageCircle, Circle, Phone, Settings as Cog } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const items = [
-  { icon: Home, path: "/", label: "Home" },
-  { icon: Compass, path: "/discover", label: "Discover" },
-  { icon: MessageCircle, path: "/chats", label: "Chat" },
-  { icon: User, path: "/profile", label: "Profile" },
+  { icon: MessageCircle, path: "/chats", label: "Chats" },
+  { icon: Circle, path: "/status", label: "Status" },
+  { icon: Phone, path: "/calls", label: "Calls" },
+  { icon: Cog, path: "/settings", label: "Settings" },
 ];
 
 export default function BottomNav() {
@@ -13,9 +13,9 @@ export default function BottomNav() {
   const nav = useNavigate();
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30">
-      <div className="flex items-center gap-2 bg-white/90 backdrop-blur rounded-full p-2 shadow-[var(--shadow-pill)]">
+      <div className="flex items-center gap-1 bg-white/90 backdrop-blur rounded-full p-2 shadow-[var(--shadow-pill)]">
         {items.map(({ icon: Icon, path, label }) => {
-          const active = loc.pathname === path || (path === "/chats" && loc.pathname.startsWith("/chat"));
+          const active = loc.pathname === path || (path === "/chats" && (loc.pathname === "/" || loc.pathname.startsWith("/chat")));
           return (
             <button
               key={path}
