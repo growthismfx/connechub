@@ -13,6 +13,7 @@ import Discover from "./pages/Discover";
 import Status from "./pages/Status";
 import Calls from "./pages/Calls";
 import Settings from "./pages/Settings";
+import Requests from "./pages/Requests";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/status" element={<Protected><Status /></Protected>} />
             <Route path="/calls" element={<Protected><Calls /></Protected>} />
             <Route path="/settings" element={<Protected><Settings /></Protected>} />
+            <Route path="/requests" element={<Protected><Requests /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
