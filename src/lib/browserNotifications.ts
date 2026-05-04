@@ -43,7 +43,6 @@ export const showBrowserNotification = ({ title, body, tag, onClick }: BrowserNo
   const notification = new Notification(title, {
     body,
     tag,
-    renotify: true,
     icon: "/placeholder.svg",
   });
 
