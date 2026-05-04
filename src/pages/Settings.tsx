@@ -7,10 +7,11 @@ import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Moon, 
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, setBrowserNotificationsEnabled } from "@/lib/browserNotifications";
+import { subscribeToPush, unsubscribeFromPush, getPushStatus, isPushSupported } from "@/lib/pushNotifications";
 import InstallAppButton from "@/components/InstallAppButton";
 
 export default function Settings() {
@@ -21,8 +22,39 @@ export default function Settings() {
   const [name, setName] = useState(profile?.name || "");
   const [status, setStatus] = useState(profile?.status || "");
   const [notifications, setNotifications] = useState(getBrowserNotificationsEnabled());
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushSupported, setPushSupported] = useState(true);
   const [readReceipts, setReadReceipts] = useState(true);
   const [showOnline, setShowOnline] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const supported = await isPushSupported();
+      setPushSupported(supported);
+      const status = await getPushStatus();
+      setPushEnabled(status === "granted");
+    })();
+  }, []);
+
+  const handlePushToggle = async (enabled: boolean) => {
+    if (enabled) {
+      const r = await subscribeToPush();
+      if (!r.ok) {
+        if (r.reason === "preview") toast.error("Push only works on the published app, not the editor preview");
+        else if (r.reason === "denied") toast.error("Permission denied. Allow notifications in browser settings.");
+        else if (r.reason === "unsupported") toast.error("Your browser does not support push notifications");
+        else toast.error("Could not enable push: " + (r.reason || "unknown"));
+        setPushEnabled(false);
+        return;
+      }
+      setPushEnabled(true);
+      toast.success("Push notifications enabled");
+    } else {
+      await unsubscribeFromPush();
+      setPushEnabled(false);
+      toast.success("Push notifications disabled");
+    }
+  };
 
   const save = async () => {
     if (!user) return;
@@ -107,7 +139,13 @@ export default function Settings() {
       </Section>
 
       <Section title="Notifications">
-        <Row icon={Bell} label="Push notifications" action={<Switch checked={notifications} onCheckedChange={handleNotificationsToggle} />} />
+        <Row icon={Bell} label="In-app notifications" sub="Show alerts while the app is open" action={<Switch checked={notifications} onCheckedChange={handleNotificationsToggle} />} />
+        <Row
+          icon={Bell}
+          label="Push notifications"
+          sub={pushSupported ? "Receive messages and calls when the app is closed" : "Not supported in this browser"}
+          action={<Switch disabled={!pushSupported} checked={pushEnabled} onCheckedChange={handlePushToggle} />}
+        />
       </Section>
 
       <Section title="Appearance">

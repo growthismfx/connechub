@@ -17,6 +17,7 @@ import Requests from "./pages/Requests";
 import CallScreen from "./pages/CallScreen";
 import BrowserNotificationListener from "./components/BrowserNotificationListener";
 import IncomingCallOverlay from "./components/IncomingCallOverlay";
+import PushBootstrap from "./components/PushBootstrap";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
         <AuthProvider>
           <BrowserNotificationListener />
           <IncomingCallOverlay />
+          <PushBootstrap />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
