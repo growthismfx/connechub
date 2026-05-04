@@ -550,6 +550,28 @@ export default function CallScreen() {
           </button>
         </div>
       )}
+
+      {permissionError && (
+        <MediaPermissionPrompt
+          needVideo={isVideo}
+          errorMessage={permissionError}
+          onCancel={() => endCall("ended", true)}
+          onRetry={async () => {
+            setPermissionError(null);
+            try {
+              await ensureLocalStream();
+              if (role === "caller" && !offerSentRef.current) {
+                offerSentRef.current = false;
+                await startOutgoingCall();
+              } else if (role === "callee") {
+                await acceptIncoming();
+              }
+            } catch {
+              /* prompt will reopen via setPermissionError inside ensureLocalStream */
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
