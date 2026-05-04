@@ -15,7 +15,8 @@ import Calls from "./pages/Calls";
 import Settings from "./pages/Settings";
 import Requests from "./pages/Requests";
 import CallScreen from "./pages/CallScreen";
-import IncomingCallListener from "./components/IncomingCallListener";
+import BrowserNotificationListener from "./components/BrowserNotificationListener";
+import IncomingCallOverlay from "./components/IncomingCallOverlay";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +34,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <IncomingCallListener />
+          <BrowserNotificationListener />
+          <IncomingCallOverlay />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
