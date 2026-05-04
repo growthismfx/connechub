@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { createOrGetActiveCall } from "@/lib/callHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -77,11 +78,7 @@ export default function Chat() {
 
   const startCall = async (call_type: "voice" | "video") => {
     if (!user || !other) return;
-    const { data, error } = await supabase
-      .from("calls")
-      .insert({ caller_id: user.id, callee_id: other.id, call_type, status: "ringing" })
-      .select()
-      .single();
+    const { data, error } = await createOrGetActiveCall({ callerId: user.id, calleeId: other.id, callType: call_type });
     if (error || !data) return toast.error(error?.message || "Failed to start call");
     nav(`/call/${data.id}?role=caller`);
   };
