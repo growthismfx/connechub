@@ -139,7 +139,13 @@ export default function Settings() {
       </Section>
 
       <Section title="Notifications">
-        <Row icon={Bell} label="Push notifications" action={<Switch checked={notifications} onCheckedChange={handleNotificationsToggle} />} />
+        <Row icon={Bell} label="In-app notifications" sub="Show alerts while the app is open" action={<Switch checked={notifications} onCheckedChange={handleNotificationsToggle} />} />
+        <Row
+          icon={Bell}
+          label="Push notifications"
+          sub={pushSupported ? "Receive messages and calls when the app is closed" : "Not supported in this browser"}
+          action={<Switch disabled={!pushSupported} checked={pushEnabled} onCheckedChange={handlePushToggle} />}
+        />
       </Section>
 
       <Section title="Appearance">
