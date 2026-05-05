@@ -38,6 +38,21 @@ async function isCurrentVapidSubscription(sub: PushSubscription): Promise<boolea
   return uint8ArrayToUrlBase64(keyBytes) === VAPID_PUBLIC_KEY;
 }
 
+async function hasStoredSubscription(endpoint: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .select("id")
+    .eq("endpoint", endpoint)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[push] check stored sub failed", error);
+    return false;
+  }
+
+  return Boolean(data?.id);
+}
+
 async function persistSubscription(sub: PushSubscription): Promise<{ ok: boolean; reason?: string }> {
   const json: any = sub.toJSON();
   const { data: { user } } = await supabase.auth.getUser();
@@ -112,7 +127,18 @@ export async function getPushEnabled(): Promise<boolean> {
   const sub = await reg?.pushManager.getSubscription();
   if (!sub) return false;
 
-  return isCurrentVapidSubscription(sub);
+  const isValid = await isCurrentVapidSubscription(sub);
+  if (!isValid) return false;
+
+  return hasStoredSubscription(sub.endpoint);
+}
+
+export async function syncPushSubscription(): Promise<{ ok: boolean; reason?: string }> {
+  if (!(await isPushSupported())) return { ok: false, reason: "unsupported" };
+  if (isPreviewOrIframe()) return { ok: false, reason: "preview" };
+  if (Notification.permission !== "granted") return { ok: false, reason: "denied" };
+
+  return subscribeToPush({ skipPermissionPrompt: true });
 }
 
 export async function subscribeToPush(options?: { forceRefresh?: boolean; skipPermissionPrompt?: boolean }): Promise<{ ok: boolean; reason?: string }> {
