@@ -36,8 +36,12 @@ async function sendToUser(userId: string, payload: Record<string, unknown>) {
         sent++;
       } catch (err: any) {
         console.error("[send-push] error", err?.statusCode, err?.body);
-        // Clean up dead subscriptions
-        if (err?.statusCode === 404 || err?.statusCode === 410) {
+        const shouldDeleteSubscription =
+          err?.statusCode === 404 ||
+          err?.statusCode === 410 ||
+          err?.statusCode === 403;
+
+        if (shouldDeleteSubscription) {
           await supabase.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
         }
       }
