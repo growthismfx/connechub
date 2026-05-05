@@ -171,6 +171,32 @@ export async function subscribeToPush(options?: { forceRefresh?: boolean; skipPe
   return persistSubscription(sub);
 }
 
+export async function ensurePushReady(): Promise<{ ok: boolean; reason?: string }> {
+  if (!(await isPushSupported())) return { ok: false, reason: "unsupported" };
+  if (isPreviewOrIframe()) return { ok: false, reason: "preview" };
+
+  const reg = await registerServiceWorker();
+  if (!reg) return { ok: false, reason: "sw-failed" };
+
+  if (Notification.permission !== "granted") {
+    return { ok: false, reason: Notification.permission };
+  }
+
+  const existing = await reg.pushManager.getSubscription();
+  if (!existing) {
+    return subscribeToPush({ skipPermissionPrompt: true });
+  }
+
+  const isValid = await isCurrentVapidSubscription(existing);
+  const isStored = await hasStoredSubscription(existing.endpoint);
+
+  if (!isValid || !isStored) {
+    return subscribeToPush({ forceRefresh: !isValid, skipPermissionPrompt: true });
+  }
+
+  return { ok: true };
+}
+
 export async function unsubscribeFromPush(): Promise<void> {
   if (!("serviceWorker" in navigator)) return;
   const reg = await navigator.serviceWorker.getRegistration();
