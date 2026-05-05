@@ -21,6 +21,64 @@ function isPreviewOrIframe(): boolean {
   return h.includes("id-preview--") || h.includes("lovableproject.com");
 }
 
+function uint8ArrayToUrlBase64(bytes: Uint8Array): string {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function isCurrentVapidSubscription(sub: PushSubscription): Promise<boolean> {
+  const appServerKey = sub.options.applicationServerKey;
+  if (!appServerKey) return false;
+
+  const keyBytes = new Uint8Array(appServerKey);
+  return uint8ArrayToUrlBase64(keyBytes) === VAPID_PUBLIC_KEY;
+}
+
+async function persistSubscription(sub: PushSubscription): Promise<{ ok: boolean; reason?: string }> {
+  const json: any = sub.toJSON();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, reason: "no-user" };
+
+  const { error } = await supabase.from("push_subscriptions").upsert(
+    {
+      user_id: user.id,
+      endpoint: sub.endpoint,
+      p256dh: json.keys?.p256dh,
+      auth: json.keys?.auth,
+      user_agent: navigator.userAgent,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "endpoint" }
+  );
+
+  if (error) {
+    console.error("[push] save sub failed", error);
+    return { ok: false, reason: error.message };
+  }
+
+  return { ok: true };
+}
+
+async function clearSubscription(sub: PushSubscription | null | undefined): Promise<void> {
+  if (!sub) return;
+
+  try {
+    await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+  } catch (error) {
+    console.error("[push] delete sub failed", error);
+  }
+
+  try {
+    await sub.unsubscribe();
+  } catch (error) {
+    console.error("[push] unsubscribe failed", error);
+  }
+}
+
 export async function isPushSupported(): Promise<boolean> {
   return (
     typeof window !== "undefined" &&
@@ -46,17 +104,37 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 }
 
-export async function subscribeToPush(): Promise<{ ok: boolean; reason?: string }> {
+export async function getPushEnabled(): Promise<boolean> {
+  if (!(await isPushSupported()) || isPreviewOrIframe()) return false;
+  if (Notification.permission !== "granted") return false;
+
+  const reg = await registerServiceWorker();
+  const sub = await reg?.pushManager.getSubscription();
+  if (!sub) return false;
+
+  return isCurrentVapidSubscription(sub);
+}
+
+export async function subscribeToPush(options?: { forceRefresh?: boolean; skipPermissionPrompt?: boolean }): Promise<{ ok: boolean; reason?: string }> {
   if (!(await isPushSupported())) return { ok: false, reason: "unsupported" };
   if (isPreviewOrIframe()) return { ok: false, reason: "preview" };
 
-  const permission = await Notification.requestPermission();
+  const permission = options?.skipPermissionPrompt && Notification.permission !== "granted"
+    ? Notification.permission
+    : await Notification.requestPermission();
   if (permission !== "granted") return { ok: false, reason: "denied" };
 
   const reg = await registerServiceWorker();
   if (!reg) return { ok: false, reason: "sw-failed" };
 
   let sub = await reg.pushManager.getSubscription();
+  const staleSubscription = sub ? !(await isCurrentVapidSubscription(sub)) : false;
+
+  if (sub && (options?.forceRefresh || staleSubscription)) {
+    await clearSubscription(sub);
+    sub = null;
+  }
+
   if (!sub) {
     sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
@@ -64,37 +142,14 @@ export async function subscribeToPush(): Promise<{ ok: boolean; reason?: string 
     });
   }
 
-  const json: any = sub.toJSON();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false, reason: "no-user" };
-
-  const { error } = await supabase.from("push_subscriptions").upsert(
-    {
-      user_id: user.id,
-      endpoint: sub.endpoint,
-      p256dh: json.keys?.p256dh,
-      auth: json.keys?.auth,
-      user_agent: navigator.userAgent,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "endpoint" }
-  );
-
-  if (error) {
-    console.error("[push] save sub failed", error);
-    return { ok: false, reason: error.message };
-  }
-  return { ok: true };
+  return persistSubscription(sub);
 }
 
 export async function unsubscribeFromPush(): Promise<void> {
   if (!("serviceWorker" in navigator)) return;
   const reg = await navigator.serviceWorker.getRegistration();
   const sub = await reg?.pushManager.getSubscription();
-  if (sub) {
-    await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
-    await sub.unsubscribe();
-  }
+  await clearSubscription(sub);
 }
 
 export async function getPushStatus(): Promise<"granted" | "denied" | "default" | "unsupported"> {
