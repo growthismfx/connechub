@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, setBrowserNotificationsEnabled } from "@/lib/browserNotifications";
-import { subscribeToPush, unsubscribeFromPush, getPushStatus, isPushSupported } from "@/lib/pushNotifications";
+import { subscribeToPush, unsubscribeFromPush, getPushEnabled, isPushSupported } from "@/lib/pushNotifications";
 import InstallAppButton from "@/components/InstallAppButton";
 
 export default function Settings() {
@@ -31,14 +31,14 @@ export default function Settings() {
     (async () => {
       const supported = await isPushSupported();
       setPushSupported(supported);
-      const status = await getPushStatus();
-      setPushEnabled(status === "granted");
+      const enabled = await getPushEnabled();
+      setPushEnabled(enabled);
     })();
   }, []);
 
   const handlePushToggle = async (enabled: boolean) => {
     if (enabled) {
-      const r = await subscribeToPush();
+      const r = await subscribeToPush({ forceRefresh: true });
       if (!r.ok) {
         if (r.reason === "preview") toast.error("Push only works on the published app, not the editor preview");
         else if (r.reason === "denied") toast.error("Permission denied. Allow notifications in browser settings.");
