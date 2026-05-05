@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, setBrowserNotificationsEnabled } from "@/lib/browserNotifications";
-import { subscribeToPush, unsubscribeFromPush, getPushEnabled, isPushSupported } from "@/lib/pushNotifications";
+import { subscribeToPush, unsubscribeFromPush, getPushEnabled, isPushSupported, ensurePushReady } from "@/lib/pushNotifications";
 import InstallAppButton from "@/components/InstallAppButton";
 
 export default function Settings() {
@@ -78,6 +78,11 @@ export default function Settings() {
         setNotifications(false);
         setBrowserNotificationsEnabled(false);
         return;
+      }
+
+      const pushResult = await ensurePushReady();
+      if (pushResult.ok) {
+        setPushEnabled(true);
       }
     }
 
