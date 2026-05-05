@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { registerServiceWorker, subscribeToPush, getPushStatus, getPushEnabled } from "@/lib/pushNotifications";
+import { registerServiceWorker, subscribeToPush, getPushStatus, getPushEnabled, syncPushSubscription } from "@/lib/pushNotifications";
 
 // Mounts once. If the user has already granted notification permission,
 // silently re-subscribes so push works after reloads / new devices.
@@ -13,9 +13,12 @@ export default function PushBootstrap() {
       await registerServiceWorker();
       const status = await getPushStatus();
       if (status === "granted") {
-        const enabled = await getPushEnabled();
-        if (!enabled) {
-          await subscribeToPush({ forceRefresh: true, skipPermissionPrompt: true });
+        const synced = await syncPushSubscription();
+        if (!synced.ok) {
+          const enabled = await getPushEnabled();
+          if (!enabled) {
+            await subscribeToPush({ forceRefresh: true, skipPermissionPrompt: true });
+          }
         }
       }
     })();
