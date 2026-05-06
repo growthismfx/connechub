@@ -1,6 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const VAPID_PUBLIC_KEY = "BLmVyqlcaRaSat1t_unuE-Yt87-LfiYwYrRuu_IJ-xQ3WvoJh3It1Pklr6MKNi4XeQge3h9R9TyegnWyIlmk0VA";
+let cachedVapidKey: string | null = null;
+
+async function getVapidPublicKey(): Promise<string> {
+  if (cachedVapidKey) return cachedVapidKey;
+  const { data, error } = await supabase.functions.invoke("vapid-public-key", { method: "GET" });
+  if (error || !data?.publicKey) {
+    throw new Error("Could not load push key: " + (error?.message || "unknown"));
+  }
+  cachedVapidKey = data.publicKey as string;
+  return cachedVapidKey;
+}
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
