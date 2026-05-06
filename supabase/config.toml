@@ -2,3 +2,6 @@ project_id = "nsykpmnjbpjolhlpoaks"
 
 [functions.send-push]
 verify_jwt = false
+
+[functions.vapid-public-key]
+verify_jwt = false
