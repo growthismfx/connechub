@@ -45,7 +45,12 @@ async function isCurrentVapidSubscription(sub: PushSubscription): Promise<boolea
   if (!appServerKey) return false;
 
   const keyBytes = new Uint8Array(appServerKey);
-  return uint8ArrayToUrlBase64(keyBytes) === VAPID_PUBLIC_KEY;
+  try {
+    const current = await getVapidPublicKey();
+    return uint8ArrayToUrlBase64(keyBytes) === current;
+  } catch {
+    return false;
+  }
 }
 
 async function hasStoredSubscription(endpoint: string): Promise<boolean> {
