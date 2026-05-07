@@ -38,7 +38,8 @@ export default function MiniCallWidget() {
       ? formatDuration(callDurationStart)
       : status === "ringing" ? "Ringing…" : "Calling…";
 
-  const expand = () => nav(`/call/${call.id}?role=${call.caller_id ? "caller" : "callee"}`);
+  const role = user?.id && call.caller_id === user.id ? "caller" : "callee";
+  const expand = () => nav(`/call/${call.id}?role=${role}`);
 
   return (
     <>
