@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Mic, MicOff, Video, VideoOff, Phone, PhoneOff, Maximize2, SwitchCamera } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 function formatDuration(start: number | null) {
   if (!start) return "Connecting…";
@@ -16,6 +17,7 @@ function formatDuration(start: number | null) {
 
 export default function MiniCallWidget() {
   const { call, other, status, muted, camOff, callDurationStart, toggleMute, toggleCamera, switchCamera, endCall } = useActiveCall();
+  const { user } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
   const [open, setOpen] = useState(false);
