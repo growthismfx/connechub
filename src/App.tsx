@@ -18,6 +18,8 @@ import CallScreen from "./pages/CallScreen";
 import BrowserNotificationListener from "./components/BrowserNotificationListener";
 import IncomingCallOverlay from "./components/IncomingCallOverlay";
 import PushBootstrap from "./components/PushBootstrap";
+import { ActiveCallProvider } from "./contexts/ActiveCallContext";
+import MiniCallWidget from "./components/MiniCallWidget";
 
 const queryClient = new QueryClient();
 
@@ -35,9 +37,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ActiveCallProvider>
           <BrowserNotificationListener />
           <IncomingCallOverlay />
           <PushBootstrap />
+          <MiniCallWidget />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -52,6 +56,7 @@ const App = () => (
             <Route path="/requests" element={<Protected><Requests /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </ActiveCallProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
