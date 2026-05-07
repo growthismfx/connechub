@@ -201,9 +201,11 @@ export type Database = {
           content: string | null
           conversation_id: string
           created_at: string | null
+          delivered_at: string | null
           id: string
           media_url: string | null
           message_type: string | null
+          read_at: string | null
           reply_to: string | null
           sender_id: string
           status: string | null
@@ -212,9 +214,11 @@ export type Database = {
           content?: string | null
           conversation_id: string
           created_at?: string | null
+          delivered_at?: string | null
           id?: string
           media_url?: string | null
           message_type?: string | null
+          read_at?: string | null
           reply_to?: string | null
           sender_id: string
           status?: string | null
@@ -223,9 +227,11 @@ export type Database = {
           content?: string | null
           conversation_id?: string
           created_at?: string | null
+          delivered_at?: string | null
           id?: string
           media_url?: string | null
           message_type?: string | null
+          read_at?: string | null
           reply_to?: string | null
           sender_id?: string
           status?: string | null

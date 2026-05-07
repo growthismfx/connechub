@@ -80,7 +80,10 @@ Deno.serve(async (req) => {
       const payload = {
         title: senderName,
         body: preview,
-        tag: `msg-${record.conversation_id}`,
+        kind: "message",
+        // Unique tag per message so multiple messages from same chat all alert
+        tag: `msg-${record.id}`,
+        renotify: true,
         url: `/chat/${record.conversation_id}`,
       };
 
@@ -104,10 +107,13 @@ Deno.serve(async (req) => {
       const payload = {
         title: record.call_type === "video" ? "Incoming video call" : "Incoming voice call",
         body: `${callerName} is calling you`,
+        kind: "call",
+        callId: record.id,
         tag: `call-${record.id}`,
+        renotify: true,
         url: `/call/${record.id}?role=callee`,
         requireInteraction: true,
-        vibrate: [400, 200, 400, 200, 400],
+        vibrate: [500, 300, 500, 300, 500, 300, 500],
       };
       const r = await sendToUser(record.callee_id, payload);
       return new Response(JSON.stringify({ ok: true, sent: r.sent }), {
