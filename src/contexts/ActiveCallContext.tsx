@@ -507,16 +507,7 @@ export function ActiveCallProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("pagehide", onPageHide);
     };
   }, [call?.id, status]);
-          void supabase.from("calls").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", c.id);
-        }
-      }
-    };
-    window.addEventListener("pagehide", onPageHide);
-    return () => {
-      window.removeEventListener("beforeunload", handler);
-      window.removeEventListener("pagehide", onPageHide);
-    };
-  }, [call?.id, status]);
+
 
   const toggleMute = () => {
     const next = !muted;
