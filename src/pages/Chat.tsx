@@ -4,7 +4,7 @@ import { createOrGetActiveCall } from "@/lib/callHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck } from "lucide-react";
+import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck, PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
@@ -25,6 +25,8 @@ export default function Chat() {
   const lastTypingSentRef = useRef(0);
   const stopTypingRef = useRef<number | null>(null);
 
+  const [isSelf, setIsSelf] = useState(false);
+
   useEffect(() => {
     if (!user || !id) return;
     (async () => {
@@ -38,6 +40,12 @@ export default function Chat() {
       if (otherP) {
         const { data: prof } = await supabase.from("profiles").select("*").eq("id", otherP.user_id).maybeSingle();
         setOther(prof);
+        setIsSelf(false);
+      } else {
+        // Self-chat: only one participant (me)
+        const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+        setOther({ ...(prof || {}), name: "You (Message yourself)" });
+        setIsSelf(true);
       }
     })();
   }, [id, user]);
@@ -114,9 +122,21 @@ export default function Chat() {
     typingTimerRef.current = window.setTimeout(() => sendTyping(false), 2000);
   };
 
+  const didInitialScrollRef = useRef(false);
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    // First load: jump instantly to bottom; afterwards smooth-scroll on new messages
+    if (!didInitialScrollRef.current && messages.length) {
+      el.scrollTop = el.scrollHeight;
+      didInitialScrollRef.current = true;
+      return;
+    }
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, otherTyping]);
+
+  // Reset initial-scroll flag when switching conversations
+  useEffect(() => { didInitialScrollRef.current = false; }, [id]);
 
   const send = async () => {
     if (!text.trim() || !id || !user || sending) return;
@@ -191,14 +211,16 @@ export default function Chat() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
-            <Phone className="w-4 h-4" />
-          </button>
-          <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
-            <Video className="w-4 h-4" />
-          </button>
-        </div>
+        {!isSelf && (
+          <div className="flex gap-2">
+            <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+              <Phone className="w-4 h-4" />
+            </button>
+            <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+              <Video className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3 pb-28">
@@ -208,7 +230,18 @@ export default function Chat() {
             <div key={m.id} className={`flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
               <div className="max-w-[75%]">
                 <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
-                  {m.message_type === "image" && m.media_url ? (
+                  {m.message_type === "call" ? (
+                    <p className="text-sm flex items-center gap-2">
+                      {(m.content || "").toLowerCase().includes("missed") ? (
+                        <PhoneMissed className="w-4 h-4 text-destructive" />
+                      ) : me ? (
+                        <PhoneOutgoing className="w-4 h-4" />
+                      ) : (
+                        <PhoneIncoming className="w-4 h-4" />
+                      )}
+                      <span>{m.content}</span>
+                    </p>
+                  ) : m.message_type === "image" && m.media_url ? (
                     <img src={m.media_url} alt="" className="rounded-2xl max-w-full" />
                   ) : m.message_type === "video" && m.media_url ? (
                     <video src={m.media_url} controls className="rounded-2xl max-w-full" />

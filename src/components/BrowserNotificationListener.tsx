@@ -33,7 +33,11 @@ export default function BrowserNotificationListener() {
 
           if (!participant) return;
           seenMessagesRef.current.add(message.id);
+          // Don't show in-app banner if user is reading this exact chat
           if (location.pathname === `/chat/${message.conversation_id}` && document.visibilityState === "visible") return;
+          // If the page is hidden, the service worker push will deliver the OS notification.
+          // Avoid double-notifying the user.
+          if (document.visibilityState !== "visible") return;
 
           const { data: sender } = await supabase
             .from("profiles")
@@ -73,6 +77,9 @@ export default function BrowserNotificationListener() {
             .maybeSingle();
 
           const callerName = caller?.name || (caller?.username ? `@${caller.username}` : "Incoming call");
+
+          // SW push handles OS-level call notification; only show in-tab banner when visible
+          if (document.visibilityState !== "visible") return;
 
           showBrowserNotification({
             title: call.call_type === "video" ? "Incoming video call" : "Incoming voice call",

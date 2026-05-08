@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Settings as SettingsIcon, Plus, UserPlus } from "lucide-react";
+import { Search, Settings as SettingsIcon, Plus, UserPlus, BookmarkPlus } from "lucide-react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { formatDistanceToNow } from "date-fns";
@@ -88,9 +89,27 @@ export default function Chats() {
         </div>
       </div>
 
-      <button onClick={() => nav("/discover")} className="w-full flex items-center gap-3 bg-white rounded-full px-5 h-12 shadow-[var(--shadow-pill)] mb-4">
+      <button onClick={() => nav("/discover")} className="w-full flex items-center gap-3 bg-white rounded-full px-5 h-12 shadow-[var(--shadow-pill)] mb-3">
         <Search className="w-4 h-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">Search by username or phone</span>
+      </button>
+
+      <button
+        onClick={async () => {
+          if (!user) return;
+          const { data, error } = await supabase.rpc("find_or_create_dm", { _a: user.id, _b: user.id });
+          if (error || !data) return toast.error(error?.message || "Could not open self-chat");
+          nav(`/chat/${data}`);
+        }}
+        className="w-full flex items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-[var(--shadow-soft)] mb-4"
+      >
+        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--gradient-card)" }}>
+          <BookmarkPlus className="w-5 h-5" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-semibold text-sm">Message yourself</p>
+          <p className="text-xs text-muted-foreground">Notes, reminders & saved links</p>
+        </div>
       </button>
 
       <div className="space-y-1">

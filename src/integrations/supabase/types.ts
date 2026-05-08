@@ -198,6 +198,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          call_id: string | null
           content: string | null
           conversation_id: string
           created_at: string | null
@@ -211,6 +212,7 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          call_id?: string | null
           content?: string | null
           conversation_id: string
           created_at?: string | null
@@ -224,6 +226,7 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          call_id?: string | null
           content?: string | null
           conversation_id?: string
           created_at?: string | null
@@ -419,6 +422,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_or_create_dm: { Args: { _a: string; _b: string }; Returns: string }
       is_participant: {
         Args: { _conv: string; _user: string }
         Returns: boolean

@@ -16,17 +16,20 @@ self.addEventListener("push", (event) => {
   }
 
   const isCall = data.kind === "call";
+  // Always use a unique tag so multiple notifications stack instead of replacing each other
+  const uniqueTag = (data.tag || "default") + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
   const title = data.title || "ConnectHub";
   const options = {
     body: data.body || "",
     icon: data.icon || "/icons/icon-192.png",
     badge: data.badge || "/icons/icon-192.png",
-    tag: data.tag || "default",
-    renotify: data.renotify !== false, // re-alert per push
+    tag: uniqueTag,
+    renotify: true,
     data: { url: data.url || "/", kind: data.kind, callId: data.callId, ...(data.data || {}) },
     requireInteraction: !!data.requireInteraction || isCall,
     vibrate: data.vibrate || (isCall ? [500, 300, 500, 300, 500, 300, 500] : [200, 100, 200]),
     silent: false,
+    timestamp: Date.now(),
     actions: isCall
       ? [
           { action: "accept", title: "Receive" },
