@@ -466,6 +466,21 @@ export function ActiveCallProvider({ children }: { children: ReactNode }) {
     };
   }, [status]);
 
+  // Auto-mark as "missed" if not answered within 40s
+  useEffect(() => {
+    if (!call?.id) return;
+    if (!["calling", "ringing"].includes(status)) return;
+    const t = window.setTimeout(() => {
+      if (endedRef.current) return;
+      const c = callRef.current;
+      if (!c || !ACTIVE_STATUSES.has(c.status)) return;
+      // Caller side: callee never picked up → missed
+      // Callee side: never accepted → missed
+      void endCall("missed");
+    }, 40000);
+    return () => window.clearTimeout(t);
+  }, [call?.id, status]);
+
   // Warn user if they try to close the tab during an active call
   useEffect(() => {
     if (!call || status === "ended" || status === "idle") return;
@@ -482,6 +497,16 @@ export function ActiveCallProvider({ children }: { children: ReactNode }) {
         if (c && ACTIVE_STATUSES.has(c.status)) {
           const blob = new Blob([JSON.stringify({})], { type: "application/json" });
           // Just fire & forget update (won't always run)
+          void supabase.from("calls").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", c.id);
+        }
+      }
+    };
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      window.removeEventListener("beforeunload", handler);
+      window.removeEventListener("pagehide", onPageHide);
+    };
+  }, [call?.id, status]);
           void supabase.from("calls").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", c.id);
         }
       }
