@@ -6,13 +6,27 @@ import { Phone, Video, PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-
 import BottomNav from "@/components/BottomNav";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { createOrGetActiveCall } from "@/lib/callHelpers";
 
 export default function Calls() {
   const { user } = useAuth();
   const nav = useNavigate();
+  const [params, setParams] = useSearchParams();
   const [calls, setCalls] = useState<any[]>([]);
+
+  // Handle ?decline=<callId> from notification action
+  useEffect(() => {
+    const declineId = params.get("decline");
+    if (!declineId || !user) return;
+    (async () => {
+      await supabase.from("calls")
+        .update({ status: "rejected", ended_at: new Date().toISOString() })
+        .eq("id", declineId)
+        .eq("callee_id", user.id);
+      setParams({}, { replace: true });
+    })();
+  }, [params, user, setParams]);
 
   const load = async () => {
     if (!user) return;
