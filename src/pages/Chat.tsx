@@ -4,7 +4,7 @@ import { createOrGetActiveCall } from "@/lib/callHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck } from "lucide-react";
+import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck, PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
@@ -114,9 +114,21 @@ export default function Chat() {
     typingTimerRef.current = window.setTimeout(() => sendTyping(false), 2000);
   };
 
+  const didInitialScrollRef = useRef(false);
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    // First load: jump instantly to bottom; afterwards smooth-scroll on new messages
+    if (!didInitialScrollRef.current && messages.length) {
+      el.scrollTop = el.scrollHeight;
+      didInitialScrollRef.current = true;
+      return;
+    }
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, otherTyping]);
+
+  // Reset initial-scroll flag when switching conversations
+  useEffect(() => { didInitialScrollRef.current = false; }, [id]);
 
   const send = async () => {
     if (!text.trim() || !id || !user || sending) return;
