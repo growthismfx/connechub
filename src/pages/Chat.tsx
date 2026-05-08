@@ -211,14 +211,16 @@ export default function Chat() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
-            <Phone className="w-4 h-4" />
-          </button>
-          <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
-            <Video className="w-4 h-4" />
-          </button>
-        </div>
+        {!isSelf && (
+          <div className="flex gap-2">
+            <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+              <Phone className="w-4 h-4" />
+            </button>
+            <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+              <Video className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3 pb-28">
