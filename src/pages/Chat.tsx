@@ -220,7 +220,18 @@ export default function Chat() {
             <div key={m.id} className={`flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
               <div className="max-w-[75%]">
                 <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
-                  {m.message_type === "image" && m.media_url ? (
+                  {m.message_type === "call" ? (
+                    <p className="text-sm flex items-center gap-2">
+                      {(m.content || "").toLowerCase().includes("missed") ? (
+                        <PhoneMissed className="w-4 h-4 text-destructive" />
+                      ) : me ? (
+                        <PhoneOutgoing className="w-4 h-4" />
+                      ) : (
+                        <PhoneIncoming className="w-4 h-4" />
+                      )}
+                      <span>{m.content}</span>
+                    </p>
+                  ) : m.message_type === "image" && m.media_url ? (
                     <img src={m.media_url} alt="" className="rounded-2xl max-w-full" />
                   ) : m.message_type === "video" && m.media_url ? (
                     <video src={m.media_url} controls className="rounded-2xl max-w-full" />
