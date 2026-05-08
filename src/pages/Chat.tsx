@@ -25,6 +25,8 @@ export default function Chat() {
   const lastTypingSentRef = useRef(0);
   const stopTypingRef = useRef<number | null>(null);
 
+  const [isSelf, setIsSelf] = useState(false);
+
   useEffect(() => {
     if (!user || !id) return;
     (async () => {
@@ -38,6 +40,12 @@ export default function Chat() {
       if (otherP) {
         const { data: prof } = await supabase.from("profiles").select("*").eq("id", otherP.user_id).maybeSingle();
         setOther(prof);
+        setIsSelf(false);
+      } else {
+        // Self-chat: only one participant (me)
+        const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+        setOther({ ...(prof || {}), name: "You (Message yourself)" });
+        setIsSelf(true);
       }
     })();
   }, [id, user]);
