@@ -121,6 +121,27 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (type === "missed_call") {
+      const { data: caller } = await supabase
+        .from("profiles")
+        .select("name, username")
+        .eq("id", record.caller_id)
+        .maybeSingle();
+      const callerName = caller?.name || (caller?.username ? `@${caller.username}` : "Someone");
+      const payload = {
+        title: "Missed call",
+        body: `${callerName} tried to ${record.call_type === "video" ? "video " : ""}call you`,
+        kind: "missed_call",
+        tag: `missed-${record.id}`,
+        renotify: true,
+        url: `/calls`,
+      };
+      const r = await sendToUser(record.callee_id, payload);
+      return new Response(JSON.stringify({ ok: true, sent: r.sent }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ ok: false, error: "unknown type" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
