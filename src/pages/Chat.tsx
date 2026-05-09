@@ -27,6 +27,27 @@ export default function Chat() {
   const stopTypingRef = useRef<number | null>(null);
 
   const [isSelf, setIsSelf] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [starred, setStarred] = useState<Set<string>>(new Set());
+
+  // Load my starred ids
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("starred_messages").select("message_id").eq("user_id", user.id).then(({ data }) => {
+      setStarred(new Set((data || []).map((s: any) => s.message_id)));
+    });
+  }, [user]);
+
+  const toggleStar = async (mid: string) => {
+    if (!user) return;
+    if (starred.has(mid)) {
+      await supabase.from("starred_messages").delete().eq("user_id", user.id).eq("message_id", mid);
+      const next = new Set(starred); next.delete(mid); setStarred(next);
+    } else {
+      await supabase.from("starred_messages").insert({ user_id: user.id, message_id: mid });
+      setStarred(new Set([...starred, mid]));
+    }
+  };
 
   useEffect(() => {
     if (!user || !id) return;
