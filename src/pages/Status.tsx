@@ -46,8 +46,12 @@ export default function Status() {
 
   const view = async (s: any) => {
     setViewing(s);
+    setViewers([]);
     if (user && s.user_id !== user.id) {
       await supabase.from("status_views").insert({ status_id: s.id, viewer_id: user.id }).then(() => {});
+    } else if (user && s.user_id === user.id) {
+      const { data } = await supabase.rpc("get_status_views", { _status_id: s.id });
+      setViewers(data || []);
     }
   };
 
