@@ -22,11 +22,40 @@ export default function Settings() {
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState(profile?.name || "");
   const [status, setStatus] = useState(profile?.status || "");
+  const [countryCode, setCountryCode] = useState(profile?.country_code || "+1");
   const [notifications, setNotifications] = useState(getBrowserNotificationsEnabled());
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushSupported, setPushSupported] = useState(true);
   const [readReceipts, setReadReceipts] = useState(true);
   const [showOnline, setShowOnline] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setName(profile?.name || "");
+    setStatus(profile?.status || "");
+    setCountryCode(profile?.country_code || "+1");
+  }, [profile]);
+
+  const onAvatarChange = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const { error } = await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success("Profile photo updated");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
