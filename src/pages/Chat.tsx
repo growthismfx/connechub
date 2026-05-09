@@ -213,25 +213,27 @@ export default function Chat() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-12 pb-4 bg-white/60 backdrop-blur sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+        <div className="flex items-center gap-3 min-w-0">
+          <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="relative">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={other?.avatar_url || undefined} />
-              <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
-            </Avatar>
-            {other?.is_online && (
-              <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
-            )}
-          </div>
-          <div>
-            <h2 className="font-bold leading-tight">{other?.name || "Chat"}</h2>
-            <p className={`text-xs ${otherTyping ? "text-primary" : "text-muted-foreground"} transition-colors`}>
-              {presenceLabel}
-            </p>
-          </div>
+          <button onClick={() => !isSelf && setProfileOpen(true)} className="flex items-center gap-3 min-w-0 text-left">
+            <div className="relative shrink-0">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={other?.avatar_url || undefined} />
+                <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
+              </Avatar>
+              {other?.is_online && (
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
+              )}
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-bold leading-tight truncate">{other?.name || "Chat"}</h2>
+              <p className={`text-xs ${otherTyping ? "text-primary" : "text-muted-foreground"} transition-colors truncate`}>
+                {presenceLabel}
+              </p>
+            </div>
+          </button>
         </div>
         {!isSelf && (
           <div className="flex gap-2">
