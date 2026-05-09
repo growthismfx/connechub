@@ -147,10 +147,16 @@ export default function Settings() {
 
       {/* Profile card */}
       <div className="bg-white rounded-3xl p-5 shadow-[var(--shadow-soft)] mb-6 flex items-center gap-4">
-        <Avatar className="w-16 h-16">
-          <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="text-xl">{profile?.name?.[0]}</AvatarFallback>
-        </Avatar>
+        <button onClick={() => fileRef.current?.click()} className="relative shrink-0" disabled={uploading}>
+          <Avatar className="w-16 h-16">
+            <AvatarImage src={profile?.avatar_url || undefined} />
+            <AvatarFallback className="text-xl">{profile?.name?.[0]}</AvatarFallback>
+          </Avatar>
+          <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-[var(--shadow-pill)] border" title="Change photo">
+            <Camera className="w-3.5 h-3.5" />
+          </span>
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && onAvatarChange(e.target.files[0])} />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-lg truncate">{profile?.name}</p>
           <p className="text-xs text-muted-foreground truncate">@{profile?.username}</p>
