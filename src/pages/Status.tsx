@@ -118,8 +118,8 @@ export default function Status() {
       </Dialog>
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="rounded-3xl border-0 p-0 overflow-hidden">
-          <div className="rounded-3xl p-8 min-h-[400px] flex flex-col items-center justify-center text-center" style={{ background: viewing?.background || "var(--gradient-cta)" }}>
+        <DialogContent className="rounded-3xl border-0 p-0 overflow-hidden max-w-md">
+          <div className="rounded-t-3xl p-8 min-h-[400px] flex flex-col items-center justify-center text-center" style={{ background: viewing?.background || "var(--gradient-cta)" }}>
             <Avatar className="w-16 h-16 mb-3 ring-2 ring-white">
               <AvatarImage src={viewing?.profiles?.avatar_url || undefined} />
               <AvatarFallback>{viewing?.profiles?.name?.[0]}</AvatarFallback>
@@ -128,6 +128,23 @@ export default function Status() {
             <p className="text-xs text-foreground/70 mb-6">{viewing && formatDistanceToNow(new Date(viewing.created_at), { addSuffix: true })}</p>
             <p className="text-2xl font-semibold leading-snug">{viewing?.content}</p>
           </div>
+          {viewing?.user_id === user?.id && (
+            <div className="bg-white p-4 max-h-60 overflow-y-auto">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5" /> Viewed by {viewers.length}
+              </p>
+              {viewers.length === 0 && <p className="text-sm text-muted-foreground">No views yet</p>}
+              <div className="space-y-2">
+                {viewers.map((v: any) => (
+                  <div key={v.viewer_id} className="flex items-center gap-2">
+                    <Avatar className="w-8 h-8"><AvatarImage src={v.avatar_url || undefined} /><AvatarFallback>{v.name?.[0]}</AvatarFallback></Avatar>
+                    <p className="text-sm flex-1 truncate">{v.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(v.viewed_at), { addSuffix: true })}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
