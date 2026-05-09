@@ -163,10 +163,14 @@ export default function Chats() {
               <p className="font-semibold truncate">{r.other.name}</p>
               <p className="text-sm text-muted-foreground truncate">{r.last_message || "Say hi 👋"}</p>
             </div>
-            <div className="text-right shrink-0">
+            <div className="text-right shrink-0 flex flex-col items-end gap-1">
               <p className="text-xs text-muted-foreground">
                 {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
               </p>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                {r.muted && <BellOff className="w-3.5 h-3.5" />}
+                {r.pinned && <Pin className="w-3.5 h-3.5 fill-current" />}
+              </div>
             </div>
           </button>
         ))}
