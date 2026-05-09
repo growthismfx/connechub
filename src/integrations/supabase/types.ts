@@ -110,25 +110,58 @@ export type Database = {
           },
         ]
       }
+      chat_locks: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          pin_hash: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          pin_hash: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          pin_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           connected_via: string
           conversation_id: string
+          is_archived: boolean
+          is_muted: boolean
+          is_pinned: boolean
           joined_at: string | null
+          pinned_at: string | null
           role: string
           user_id: string
         }
         Insert: {
           connected_via?: string
           conversation_id: string
+          is_archived?: boolean
+          is_muted?: boolean
+          is_pinned?: boolean
           joined_at?: string | null
+          pinned_at?: string | null
           role?: string
           user_id: string
         }
         Update: {
           connected_via?: string
           conversation_id?: string
+          is_archived?: boolean
+          is_muted?: boolean
+          is_pinned?: boolean
           joined_at?: string | null
+          pinned_at?: string | null
           role?: string
           user_id?: string
         }
@@ -343,6 +376,24 @@ export type Database = {
         }
         Relationships: []
       }
+      starred_messages: {
+        Row: {
+          created_at: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       status_views: {
         Row: {
           status_id: string
@@ -422,7 +473,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      are_blocked: { Args: { _a: string; _b: string }; Returns: boolean }
       find_or_create_dm: { Args: { _a: string; _b: string }; Returns: string }
+      get_status_views: {
+        Args: { _status_id: string }
+        Returns: {
+          avatar_url: string
+          name: string
+          viewed_at: string
+          viewer_id: string
+        }[]
+      }
       is_participant: {
         Args: { _conv: string; _user: string }
         Returns: boolean

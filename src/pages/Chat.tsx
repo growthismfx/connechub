@@ -4,9 +4,10 @@ import { createOrGetActiveCall } from "@/lib/callHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck, PhoneIncoming, PhoneOutgoing, PhoneMissed } from "lucide-react";
+import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck, PhoneIncoming, PhoneOutgoing, PhoneMissed, Star } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import ProfileSheet from "@/components/ProfileSheet";
 
 export default function Chat() {
   const { id } = useParams();
@@ -26,6 +27,27 @@ export default function Chat() {
   const stopTypingRef = useRef<number | null>(null);
 
   const [isSelf, setIsSelf] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [starred, setStarred] = useState<Set<string>>(new Set());
+
+  // Load my starred ids
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("starred_messages").select("message_id").eq("user_id", user.id).then(({ data }) => {
+      setStarred(new Set((data || []).map((s: any) => s.message_id)));
+    });
+  }, [user]);
+
+  const toggleStar = async (mid: string) => {
+    if (!user) return;
+    if (starred.has(mid)) {
+      await supabase.from("starred_messages").delete().eq("user_id", user.id).eq("message_id", mid);
+      const next = new Set(starred); next.delete(mid); setStarred(next);
+    } else {
+      await supabase.from("starred_messages").insert({ user_id: user.id, message_id: mid });
+      setStarred(new Set([...starred, mid]));
+    }
+  };
 
   useEffect(() => {
     if (!user || !id) return;
@@ -191,25 +213,27 @@ export default function Chat() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-12 pb-4 bg-white/60 backdrop-blur sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+        <div className="flex items-center gap-3 min-w-0">
+          <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="relative">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={other?.avatar_url || undefined} />
-              <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
-            </Avatar>
-            {other?.is_online && (
-              <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
-            )}
-          </div>
-          <div>
-            <h2 className="font-bold leading-tight">{other?.name || "Chat"}</h2>
-            <p className={`text-xs ${otherTyping ? "text-primary" : "text-muted-foreground"} transition-colors`}>
-              {presenceLabel}
-            </p>
-          </div>
+          <button onClick={() => !isSelf && setProfileOpen(true)} className="flex items-center gap-3 min-w-0 text-left">
+            <div className="relative shrink-0">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={other?.avatar_url || undefined} />
+                <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
+              </Avatar>
+              {other?.is_online && (
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
+              )}
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-bold leading-tight truncate">{other?.name || "Chat"}</h2>
+              <p className={`text-xs ${otherTyping ? "text-primary" : "text-muted-foreground"} transition-colors truncate`}>
+                {presenceLabel}
+              </p>
+            </div>
+          </button>
         </div>
         {!isSelf && (
           <div className="flex gap-2">
@@ -227,8 +251,8 @@ export default function Chat() {
         {messages.map((m) => {
           const me = m.sender_id === user?.id;
           return (
-            <div key={m.id} className={`flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
-              <div className="max-w-[75%]">
+            <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
+              <div className="max-w-[75%] relative">
                 <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
                   {m.message_type === "call" ? (
                     <p className="text-sm flex items-center gap-2">
@@ -254,9 +278,17 @@ export default function Chat() {
                   )}
                 </div>
                 <p className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
+                  {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-500" />}
                   <span>{format(new Date(m.created_at), "HH:mm")}</span>
                   {me && renderTicks(m)}
                 </p>
+                <button
+                  onClick={() => toggleStar(m.id)}
+                  className={`absolute -top-2 ${me ? "-left-7" : "-right-7"} w-6 h-6 rounded-full bg-white shadow-[var(--shadow-pill)] items-center justify-center hidden group-hover:flex`}
+                  aria-label="Star message"
+                >
+                  <Star className={`w-3 h-3 ${starred.has(m.id) ? "fill-current text-yellow-500" : "text-muted-foreground"}`} />
+                </button>
               </div>
             </div>
           );
@@ -294,6 +326,7 @@ export default function Chat() {
         </div>
         <input ref={fileRef} type="file" accept="image/*,video/*,audio/*,application/*" hidden onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
       </div>
+      <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} other={other} conversationId={id} onCall={(t) => { setProfileOpen(false); startCall(t); }} />
     </div>
   );
 }

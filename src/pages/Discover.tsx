@@ -18,7 +18,6 @@ export default function Discover() {
     const t = setTimeout(async () => {
       const term = q.trim();
       if (!term) { setResults([]); return; }
-      // Detect intent: digits = phone, else username/name
       const isDigits = /^[0-9+]+$/.test(term);
       const cleaned = term.replace(/\D/g, "");
       let query = supabase
@@ -26,7 +25,9 @@ export default function Discover() {
         .select("id, name, username, avatar_url, assigned_number, country_code, is_online, status")
         .neq("id", user?.id || "");
       if (isDigits) {
-        query = query.ilike("assigned_number", `%${cleaned}%`);
+        // Require full 10-digit phone for an exact match (privacy)
+        if (cleaned.length < 10) { setResults([]); setMatchType("phone"); return; }
+        query = query.eq("assigned_number", cleaned.slice(-10));
         setMatchType("phone");
       } else {
         query = query.or(`username.ilike.%${term}%,name.ilike.%${term}%`);
@@ -61,7 +62,10 @@ export default function Discover() {
       </p>
 
       <div className="space-y-2">
-        {q && results.length === 0 && (
+        {q && /^[0-9+]+$/.test(q.trim()) && q.trim().replace(/\D/g, "").length < 10 && (
+          <p className="text-center text-muted-foreground py-8 text-sm">Enter the full 10-digit number to find a profile</p>
+        )}
+        {q && results.length === 0 && !(/^[0-9+]+$/.test(q.trim()) && q.trim().replace(/\D/g, "").length < 10) && (
           <p className="text-center text-muted-foreground py-8 text-sm">No matches found</p>
         )}
         {results.map((p) => {

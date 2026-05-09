@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Settings as SettingsIcon, Plus, UserPlus, BookmarkPlus } from "lucide-react";
+import { Search, Settings as SettingsIcon, Plus, UserPlus, BookmarkPlus, Pin, BellOff } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
@@ -18,10 +18,11 @@ export default function Chats() {
     if (!user) return;
     const { data: parts } = await supabase
       .from("conversation_participants")
-      .select("conversation_id, connected_via")
+      .select("conversation_id, connected_via, is_pinned, is_muted, is_archived, pinned_at")
       .eq("user_id", user.id);
-    const ids = (parts || []).map((p) => p.conversation_id);
-    const viaMap = new Map((parts || []).map((p: any) => [p.conversation_id, p.connected_via]));
+    const visible = (parts || []).filter((p: any) => !p.is_archived);
+    const ids = visible.map((p: any) => p.conversation_id);
+    const partMap = new Map(visible.map((p: any) => [p.conversation_id, p]));
     if (!ids.length) return setRows([]);
 
     const { data: convs } = await supabase
@@ -43,13 +44,34 @@ export default function Chats() {
     const profMap = new Map((profs || []).map((p: any) => [p.id, p]));
     const otherMap = new Map((others || []).map((o: any) => [o.conversation_id, profMap.get(o.user_id)]));
 
-    setRows((convs || []).map((c: any) => ({
-      id: c.id,
-      other: otherMap.get(c.id) || { name: c.name || "Chat", avatar_url: null, is_online: false },
-      last_message: c.last_message,
-      last_message_at: c.last_message_at,
-      via: viaMap.get(c.id),
-    })));
+    // Filter out conversations with blocked users
+    const { data: blocks } = await supabase.from("blocked_users").select("blocked_id").eq("blocker_id", user.id);
+    const blockedSet = new Set((blocks || []).map((b: any) => b.blocked_id));
+
+    const mapped = (convs || []).map((c: any) => {
+      const part: any = partMap.get(c.id);
+      const otherProfile = otherMap.get(c.id);
+      return {
+        id: c.id,
+        other: otherProfile || { name: c.name || "Chat", avatar_url: null, is_online: false },
+        otherId: (others || []).find((o: any) => o.conversation_id === c.id)?.user_id,
+        last_message: c.last_message,
+        last_message_at: c.last_message_at,
+        via: part?.connected_via,
+        pinned: !!part?.is_pinned,
+        muted: !!part?.is_muted,
+      };
+    }).filter((r: any) => !r.otherId || !blockedSet.has(r.otherId));
+
+    // Sort: pinned first, then by last_message_at desc
+    mapped.sort((a: any, b: any) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      const ta = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
+      const tb = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
+      return tb - ta;
+    });
+
+    setRows(mapped);
   };
 
   const loadPending = async () => {
@@ -141,10 +163,14 @@ export default function Chats() {
               <p className="font-semibold truncate">{r.other.name}</p>
               <p className="text-sm text-muted-foreground truncate">{r.last_message || "Say hi 👋"}</p>
             </div>
-            <div className="text-right shrink-0">
+            <div className="text-right shrink-0 flex flex-col items-end gap-1">
               <p className="text-xs text-muted-foreground">
                 {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
               </p>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                {r.muted && <BellOff className="w-3.5 h-3.5" />}
+                {r.pinned && <Pin className="w-3.5 h-3.5 fill-current" />}
+              </div>
             </div>
           </button>
         ))}

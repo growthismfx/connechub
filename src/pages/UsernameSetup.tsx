@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Check, X, Loader2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import CountryCodePicker from "@/components/CountryCodePicker";
 
 export default function UsernameSetup() {
   const { user, profile, refreshProfile } = useAuth();
@@ -15,7 +16,10 @@ export default function UsernameSetup() {
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showNumber, setShowNumber] = useState(false);
+  const [countryCode, setCountryCode] = useState(profile?.country_code || "+1");
   const navigate = useNavigate();
+
+  useEffect(() => { if (profile?.country_code) setCountryCode(profile.country_code); }, [profile?.country_code]);
 
   useEffect(() => {
     if (!username || username.length < 3) { setAvailable(null); return; }
@@ -32,7 +36,7 @@ export default function UsernameSetup() {
   const save = async () => {
     if (!available || !user) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({ username }).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update({ username, country_code: countryCode }).eq("id", user.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     await refreshProfile();
@@ -40,7 +44,7 @@ export default function UsernameSetup() {
   };
 
   const copyNumber = () => {
-    const num = `${profile?.country_code}${profile?.assigned_number}`;
+    const num = `${countryCode}${profile?.assigned_number}`;
     navigator.clipboard.writeText(num);
     toast.success("Copied!");
   };
@@ -66,6 +70,16 @@ export default function UsernameSetup() {
       </div>
       <p className="text-xs text-muted-foreground mt-3 px-2">3–20 chars. Letters, numbers, underscore.</p>
 
+      <div className="mt-6">
+        <p className="text-xs text-muted-foreground mb-2 px-2">Country</p>
+        <div className="flex items-center gap-2">
+          <CountryCodePicker value={countryCode} onChange={setCountryCode} />
+          <div className="flex-1 h-12 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center px-5 text-sm text-muted-foreground">
+            {profile?.assigned_number || "We'll assign you a number"}
+          </div>
+        </div>
+      </div>
+
       <Button
         onClick={save}
         disabled={!available || saving}
@@ -83,7 +97,7 @@ export default function UsernameSetup() {
           <div className="text-center py-4">
             <p className="text-muted-foreground mb-4">Your unique number</p>
             <div className="rounded-2xl py-6 px-4 mb-4" style={{ background: "var(--gradient-card)" }}>
-              <p className="text-3xl font-bold tracking-wider">{profile?.country_code} {profile?.assigned_number}</p>
+              <p className="text-3xl font-bold tracking-wider">{countryCode} {profile?.assigned_number}</p>
             </div>
             <Button onClick={copyNumber} variant="ghost" className="rounded-full">
               <Copy className="w-4 h-4 mr-2" /> Copy number

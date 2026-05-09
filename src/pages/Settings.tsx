@@ -3,16 +3,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Moon, Palette } from "lucide-react";
+import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Moon, Palette, Camera } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, setBrowserNotificationsEnabled } from "@/lib/browserNotifications";
 import { subscribeToPush, unsubscribeFromPush, getPushEnabled, isPushSupported, ensurePushReady } from "@/lib/pushNotifications";
 import InstallAppButton from "@/components/InstallAppButton";
+import CountryCodePicker from "@/components/CountryCodePicker";
 
 export default function Settings() {
   const { profile, user, signOut, refreshProfile } = useAuth();
@@ -21,11 +22,40 @@ export default function Settings() {
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState(profile?.name || "");
   const [status, setStatus] = useState(profile?.status || "");
+  const [countryCode, setCountryCode] = useState(profile?.country_code || "+1");
   const [notifications, setNotifications] = useState(getBrowserNotificationsEnabled());
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushSupported, setPushSupported] = useState(true);
   const [readReceipts, setReadReceipts] = useState(true);
   const [showOnline, setShowOnline] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setName(profile?.name || "");
+    setStatus(profile?.status || "");
+    setCountryCode(profile?.country_code || "+1");
+  }, [profile]);
+
+  const onAvatarChange = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const { error } = await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success("Profile photo updated");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -58,7 +88,7 @@ export default function Settings() {
 
   const save = async () => {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({ name, status }).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update({ name, status, country_code: countryCode }).eq("id", user.id);
     if (error) return toast.error(error.message);
     await refreshProfile();
     toast.success("Profile updated");
@@ -117,10 +147,16 @@ export default function Settings() {
 
       {/* Profile card */}
       <div className="bg-white rounded-3xl p-5 shadow-[var(--shadow-soft)] mb-6 flex items-center gap-4">
-        <Avatar className="w-16 h-16">
-          <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="text-xl">{profile?.name?.[0]}</AvatarFallback>
-        </Avatar>
+        <button onClick={() => fileRef.current?.click()} className="relative shrink-0" disabled={uploading}>
+          <Avatar className="w-16 h-16">
+            <AvatarImage src={profile?.avatar_url || undefined} />
+            <AvatarFallback className="text-xl">{profile?.name?.[0]}</AvatarFallback>
+          </Avatar>
+          <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-[var(--shadow-pill)] border" title="Change photo">
+            <Camera className="w-3.5 h-3.5" />
+          </span>
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && onAvatarChange(e.target.files[0])} />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-lg truncate">{profile?.name}</p>
           <p className="text-xs text-muted-foreground truncate">@{profile?.username}</p>
@@ -187,6 +223,10 @@ export default function Settings() {
             <div>
               <label className="text-xs text-muted-foreground">About</label>
               <Input value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-full h-12 mt-1" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Country</label>
+              <div className="mt-1"><CountryCodePicker value={countryCode} onChange={setCountryCode} /></div>
             </div>
             <Button onClick={save} className="w-full rounded-full h-12 text-foreground border-0" style={{ background: "var(--gradient-cta)" }}>Save</Button>
           </div>
