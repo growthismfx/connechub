@@ -251,8 +251,8 @@ export default function Chat() {
         {messages.map((m) => {
           const me = m.sender_id === user?.id;
           return (
-            <div key={m.id} className={`flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
-              <div className="max-w-[75%]">
+            <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
+              <div className="max-w-[75%] relative">
                 <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
                   {m.message_type === "call" ? (
                     <p className="text-sm flex items-center gap-2">
@@ -278,9 +278,17 @@ export default function Chat() {
                   )}
                 </div>
                 <p className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
+                  {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-500" />}
                   <span>{format(new Date(m.created_at), "HH:mm")}</span>
                   {me && renderTicks(m)}
                 </p>
+                <button
+                  onClick={() => toggleStar(m.id)}
+                  className={`absolute -top-2 ${me ? "-left-7" : "-right-7"} w-6 h-6 rounded-full bg-white shadow-[var(--shadow-pill)] items-center justify-center hidden group-hover:flex`}
+                  aria-label="Star message"
+                >
+                  <Star className={`w-3 h-3 ${starred.has(m.id) ? "fill-current text-yellow-500" : "text-muted-foreground"}`} />
+                </button>
               </div>
             </div>
           );
