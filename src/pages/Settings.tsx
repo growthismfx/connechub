@@ -224,6 +224,10 @@ export default function Settings() {
               <label className="text-xs text-muted-foreground">About</label>
               <Input value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-full h-12 mt-1" />
             </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Country</label>
+              <div className="mt-1"><CountryCodePicker value={countryCode} onChange={setCountryCode} /></div>
+            </div>
             <Button onClick={save} className="w-full rounded-full h-12 text-foreground border-0" style={{ background: "var(--gradient-cta)" }}>Save</Button>
           </div>
         </DialogContent>
