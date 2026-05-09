@@ -17,6 +17,7 @@ export default function Status() {
   const [text, setText] = useState("");
   const [bg, setBg] = useState("var(--gradient-cta)");
   const [viewing, setViewing] = useState<any>(null);
+  const [viewers, setViewers] = useState<any[]>([]);
 
   const load = async () => {
     const { data } = await supabase
