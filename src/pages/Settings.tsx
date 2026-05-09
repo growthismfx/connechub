@@ -88,7 +88,7 @@ export default function Settings() {
 
   const save = async () => {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({ name, status }).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update({ name, status, country_code: countryCode }).eq("id", user.id);
     if (error) return toast.error(error.message);
     await refreshProfile();
     toast.success("Profile updated");
