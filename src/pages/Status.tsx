@@ -134,8 +134,27 @@ export default function Status() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-3xl border-0">
+        <DialogContent className="rounded-3xl border-0 max-w-md">
           <DialogHeader><DialogTitle>New status</DialogTitle></DialogHeader>
+
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            <button onClick={() => photoRef.current?.click()} disabled={uploading} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-muted hover:bg-muted/80">
+              <ImageIcon className="w-5 h-5" />
+              <span className="text-xs">Photo</span>
+            </button>
+            <button onClick={() => videoRef.current?.click()} disabled={uploading} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-muted hover:bg-muted/80">
+              <VideoIcon className="w-5 h-5" />
+              <span className="text-xs">Video</span>
+            </button>
+            <div className="flex flex-col items-center gap-1 p-3 rounded-2xl" style={{ background: "var(--gradient-card)" }}>
+              <Type className="w-5 h-5" />
+              <span className="text-xs font-semibold">Text</span>
+            </div>
+          </div>
+
+          <input ref={photoRef} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && uploadMedia(e.target.files[0], "image")} />
+          <input ref={videoRef} type="file" accept="video/*" hidden onChange={(e) => e.target.files?.[0] && uploadMedia(e.target.files[0], "video")} />
+
           <div className="rounded-2xl p-6 min-h-[160px] flex items-center justify-center" style={{ background: bg }}>
             <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="What's on your mind?" className="bg-transparent border-0 text-center text-lg font-semibold resize-none focus-visible:ring-0" />
           </div>
@@ -144,7 +163,9 @@ export default function Status() {
               <button key={g} onClick={() => setBg(g)} className={`w-8 h-8 rounded-full ${bg === g ? "ring-2 ring-foreground" : ""}`} style={{ background: g }} />
             ))}
           </div>
-          <Button onClick={post} className="rounded-full h-12 text-foreground border-0" style={{ background: "var(--gradient-cta)" }}>Post</Button>
+          <Button onClick={post} disabled={uploading || !text.trim()} className="rounded-full h-12 text-foreground border-0" style={{ background: "var(--gradient-cta)" }}>
+            {uploading ? "Uploading…" : "Post text status"}
+          </Button>
         </DialogContent>
       </Dialog>
 
