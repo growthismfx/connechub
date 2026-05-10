@@ -171,14 +171,22 @@ export default function Status() {
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
         <DialogContent className="rounded-3xl border-0 p-0 overflow-hidden max-w-md">
-          <div className="rounded-t-3xl p-8 min-h-[400px] flex flex-col items-center justify-center text-center" style={{ background: viewing?.background || "var(--gradient-cta)" }}>
-            <Avatar className="w-16 h-16 mb-3 ring-2 ring-white">
-              <AvatarImage src={viewing?.profiles?.avatar_url || undefined} />
-              <AvatarFallback>{viewing?.profiles?.name?.[0]}</AvatarFallback>
-            </Avatar>
-            <p className="font-semibold mb-1">{viewing?.profiles?.name}</p>
-            <p className="text-xs text-foreground/70 mb-6">{viewing && formatDistanceToNow(new Date(viewing.created_at), { addSuffix: true })}</p>
-            <p className="text-2xl font-semibold leading-snug">{viewing?.content}</p>
+          <div className="rounded-t-3xl min-h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden" style={{ background: viewing?.background || "var(--gradient-cta)" }}>
+            {viewing?.media_type === "image" && viewing?.media_url ? (
+              <img src={viewing.media_url} alt="" className="w-full max-h-[60vh] object-contain bg-black" />
+            ) : viewing?.media_type === "video" && viewing?.media_url ? (
+              <video src={viewing.media_url} controls autoPlay className="w-full max-h-[60vh] bg-black" />
+            ) : (
+              <div className="p-8 w-full">
+                <Avatar className="w-16 h-16 mb-3 ring-2 ring-white mx-auto">
+                  <AvatarImage src={viewing?.profiles?.avatar_url || undefined} />
+                  <AvatarFallback>{viewing?.profiles?.name?.[0]}</AvatarFallback>
+                </Avatar>
+                <p className="font-semibold mb-1">{viewing?.profiles?.name}</p>
+                <p className="text-xs text-foreground/70 mb-6">{viewing && formatDistanceToNow(new Date(viewing.created_at), { addSuffix: true })}</p>
+                <p className="text-2xl font-semibold leading-snug">{viewing?.content}</p>
+              </div>
+            )}
           </div>
           {viewing?.user_id === user?.id && (
             <div className="bg-white p-4 max-h-60 overflow-y-auto">
