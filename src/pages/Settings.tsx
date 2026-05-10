@@ -19,6 +19,7 @@ import { useTheme, THEMES } from "@/contexts/ThemeContext";
 export default function Settings() {
   const { profile, user, signOut, refreshProfile } = useAuth();
   const nav = useNavigate();
+  const { theme, setTheme } = useTheme();
   const number = `${profile?.country_code || ""}${profile?.assigned_number || ""}`;
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState(profile?.name || "");
