@@ -33,10 +33,19 @@ export default function BrowserNotificationListener() {
 
           if (!participant) return;
           seenMessagesRef.current.add(message.id);
+
+          // Mark as delivered as soon as it reaches this client (single → double tick on sender)
+          if (!message.delivered_at) {
+            await supabase
+              .from("messages")
+              .update({ delivered_at: new Date().toISOString(), status: "delivered" })
+              .eq("id", message.id)
+              .is("delivered_at", null);
+          }
+
           // Don't show in-app banner if user is reading this exact chat
           if (location.pathname === `/chat/${message.conversation_id}` && document.visibilityState === "visible") return;
           // If the page is hidden, the service worker push will deliver the OS notification.
-          // Avoid double-notifying the user.
           if (document.visibilityState !== "visible") return;
 
           const { data: sender } = await supabase
