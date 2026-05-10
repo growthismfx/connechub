@@ -61,6 +61,7 @@ const App = () => (
           </ActiveCallProvider>
         </AuthProvider>
       </BrowserRouter>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
