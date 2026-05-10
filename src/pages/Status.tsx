@@ -18,11 +18,14 @@ export default function Status() {
   const [bg, setBg] = useState("var(--gradient-cta)");
   const [viewing, setViewing] = useState<any>(null);
   const [viewers, setViewers] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     const { data } = await supabase
       .from("statuses")
-      .select("id, content, media_url, background, created_at, user_id, profiles:profiles!statuses_user_id_fkey(id, name, avatar_url, username)")
+      .select("id, content, media_url, media_type, background, created_at, user_id, profiles:profiles!statuses_user_id_fkey(id, name, avatar_url, username)")
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false });
     setStatuses(data || []);
@@ -30,7 +33,11 @@ export default function Status() {
 
   useEffect(() => {
     load();
-    const ch = supabase.channel("statuses").on("postgres_changes", { event: "*", schema: "public", table: "statuses" }, load).subscribe();
+    const ch = supabase
+      .channel("statuses-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "statuses" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
+      .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
 
@@ -39,6 +46,30 @@ export default function Status() {
     const { error } = await supabase.from("statuses").insert({ user_id: user.id, content: text.trim(), background: bg });
     if (error) return toast.error(error.message);
     setText(""); setOpen(false); toast.success("Status posted");
+  };
+
+  const uploadMedia = async (file: File, kind: "image" | "video") => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const path = `${user.id}/status-${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from("chat-media").upload(path, file);
+      if (upErr) throw upErr;
+      const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 30);
+      const { error } = await supabase.from("statuses").insert({
+        user_id: user.id,
+        media_url: data?.signedUrl,
+        media_type: kind,
+        content: null,
+      });
+      if (error) throw error;
+      toast.success(`${kind === "image" ? "Photo" : "Video"} status posted`);
+      setOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const myStatuses = statuses.filter((s) => s.user_id === user?.id);
