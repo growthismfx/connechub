@@ -23,12 +23,23 @@ export default function Status() {
   const videoRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
-    const { data } = await supabase
+    const { data: rows, error } = await supabase
       .from("statuses")
-      .select("id, content, media_url, media_type, background, created_at, user_id, profiles:profiles!statuses_user_id_fkey(id, name, avatar_url, username)")
+      .select("id, content, media_url, media_type, background, created_at, user_id")
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false });
-    setStatuses(data || []);
+    if (error) { console.error(error); setStatuses([]); return; }
+    const list = rows || [];
+    const ids = Array.from(new Set(list.map((s: any) => s.user_id)));
+    let profMap: Record<string, any> = {};
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, name, avatar_url, username")
+        .in("id", ids);
+      (profs || []).forEach((p: any) => { profMap[p.id] = p; });
+    }
+    setStatuses(list.map((s: any) => ({ ...s, profiles: profMap[s.user_id] || null })));
   };
 
   useEffect(() => {
