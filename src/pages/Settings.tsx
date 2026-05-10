@@ -14,6 +14,7 @@ import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, se
 import { subscribeToPush, unsubscribeFromPush, getPushEnabled, isPushSupported, ensurePushReady } from "@/lib/pushNotifications";
 import InstallAppButton from "@/components/InstallAppButton";
 import CountryCodePicker from "@/components/CountryCodePicker";
+import { useTheme, THEMES } from "@/contexts/ThemeContext";
 
 export default function Settings() {
   const { profile, user, signOut, refreshProfile } = useAuth();
