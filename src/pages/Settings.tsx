@@ -14,10 +14,12 @@ import { ensureBrowserNotificationPermission, getBrowserNotificationsEnabled, se
 import { subscribeToPush, unsubscribeFromPush, getPushEnabled, isPushSupported, ensurePushReady } from "@/lib/pushNotifications";
 import InstallAppButton from "@/components/InstallAppButton";
 import CountryCodePicker from "@/components/CountryCodePicker";
+import { useTheme, THEMES } from "@/contexts/ThemeContext";
 
 export default function Settings() {
   const { profile, user, signOut, refreshProfile } = useAuth();
   const nav = useNavigate();
+  const { theme, setTheme } = useTheme();
   const number = `${profile?.country_code || ""}${profile?.assigned_number || ""}`;
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState(profile?.name || "");
@@ -190,8 +192,22 @@ export default function Settings() {
       </Section>
 
       <Section title="Appearance">
-        <Row icon={Palette} label="Theme" sub="Light" />
-        <Row icon={Moon} label="Dark mode" action={<Switch />} />
+        <div className="p-4">
+          <p className="text-sm font-medium mb-3 flex items-center gap-2"><Palette className="w-4 h-4" /> Theme</p>
+          <div className="grid grid-cols-2 gap-2">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                className={`relative rounded-2xl p-3 text-left border-2 transition-all ${theme === t.id ? "border-foreground" : "border-transparent"}`}
+                style={{ background: t.preview, backdropFilter: "blur(8px)" }}
+              >
+                <p className="font-semibold text-sm" style={{ color: t.id === "midnight" || t.id === "samsung" ? "white" : "inherit" }}>{t.name}</p>
+                <p className="text-[10px] opacity-80" style={{ color: t.id === "midnight" || t.id === "samsung" ? "white" : "inherit" }}>{t.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
       </Section>
 
       <Section title="Install">

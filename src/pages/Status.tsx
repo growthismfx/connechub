@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, X, Eye } from "lucide-react";
+import { Plus, X, Eye, Camera, Image as ImageIcon, Video as VideoIcon, Type } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,11 +18,14 @@ export default function Status() {
   const [bg, setBg] = useState("var(--gradient-cta)");
   const [viewing, setViewing] = useState<any>(null);
   const [viewers, setViewers] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     const { data } = await supabase
       .from("statuses")
-      .select("id, content, media_url, background, created_at, user_id, profiles:profiles!statuses_user_id_fkey(id, name, avatar_url, username)")
+      .select("id, content, media_url, media_type, background, created_at, user_id, profiles:profiles!statuses_user_id_fkey(id, name, avatar_url, username)")
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false });
     setStatuses(data || []);
@@ -30,7 +33,11 @@ export default function Status() {
 
   useEffect(() => {
     load();
-    const ch = supabase.channel("statuses").on("postgres_changes", { event: "*", schema: "public", table: "statuses" }, load).subscribe();
+    const ch = supabase
+      .channel("statuses-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "statuses" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
+      .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
 
@@ -39,6 +46,30 @@ export default function Status() {
     const { error } = await supabase.from("statuses").insert({ user_id: user.id, content: text.trim(), background: bg });
     if (error) return toast.error(error.message);
     setText(""); setOpen(false); toast.success("Status posted");
+  };
+
+  const uploadMedia = async (file: File, kind: "image" | "video") => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const path = `${user.id}/status-${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from("chat-media").upload(path, file);
+      if (upErr) throw upErr;
+      const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 30);
+      const { error } = await supabase.from("statuses").insert({
+        user_id: user.id,
+        media_url: data?.signedUrl,
+        media_type: kind,
+        content: null,
+      });
+      if (error) throw error;
+      toast.success(`${kind === "image" ? "Photo" : "Video"} status posted`);
+      setOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const myStatuses = statuses.filter((s) => s.user_id === user?.id);
@@ -103,8 +134,27 @@ export default function Status() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-3xl border-0">
+        <DialogContent className="rounded-3xl border-0 max-w-md">
           <DialogHeader><DialogTitle>New status</DialogTitle></DialogHeader>
+
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            <button onClick={() => photoRef.current?.click()} disabled={uploading} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-muted hover:bg-muted/80">
+              <ImageIcon className="w-5 h-5" />
+              <span className="text-xs">Photo</span>
+            </button>
+            <button onClick={() => videoRef.current?.click()} disabled={uploading} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-muted hover:bg-muted/80">
+              <VideoIcon className="w-5 h-5" />
+              <span className="text-xs">Video</span>
+            </button>
+            <div className="flex flex-col items-center gap-1 p-3 rounded-2xl" style={{ background: "var(--gradient-card)" }}>
+              <Type className="w-5 h-5" />
+              <span className="text-xs font-semibold">Text</span>
+            </div>
+          </div>
+
+          <input ref={photoRef} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && uploadMedia(e.target.files[0], "image")} />
+          <input ref={videoRef} type="file" accept="video/*" hidden onChange={(e) => e.target.files?.[0] && uploadMedia(e.target.files[0], "video")} />
+
           <div className="rounded-2xl p-6 min-h-[160px] flex items-center justify-center" style={{ background: bg }}>
             <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="What's on your mind?" className="bg-transparent border-0 text-center text-lg font-semibold resize-none focus-visible:ring-0" />
           </div>
@@ -113,20 +163,30 @@ export default function Status() {
               <button key={g} onClick={() => setBg(g)} className={`w-8 h-8 rounded-full ${bg === g ? "ring-2 ring-foreground" : ""}`} style={{ background: g }} />
             ))}
           </div>
-          <Button onClick={post} className="rounded-full h-12 text-foreground border-0" style={{ background: "var(--gradient-cta)" }}>Post</Button>
+          <Button onClick={post} disabled={uploading || !text.trim()} className="rounded-full h-12 text-foreground border-0" style={{ background: "var(--gradient-cta)" }}>
+            {uploading ? "Uploading…" : "Post text status"}
+          </Button>
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
         <DialogContent className="rounded-3xl border-0 p-0 overflow-hidden max-w-md">
-          <div className="rounded-t-3xl p-8 min-h-[400px] flex flex-col items-center justify-center text-center" style={{ background: viewing?.background || "var(--gradient-cta)" }}>
-            <Avatar className="w-16 h-16 mb-3 ring-2 ring-white">
-              <AvatarImage src={viewing?.profiles?.avatar_url || undefined} />
-              <AvatarFallback>{viewing?.profiles?.name?.[0]}</AvatarFallback>
-            </Avatar>
-            <p className="font-semibold mb-1">{viewing?.profiles?.name}</p>
-            <p className="text-xs text-foreground/70 mb-6">{viewing && formatDistanceToNow(new Date(viewing.created_at), { addSuffix: true })}</p>
-            <p className="text-2xl font-semibold leading-snug">{viewing?.content}</p>
+          <div className="rounded-t-3xl min-h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden" style={{ background: viewing?.background || "var(--gradient-cta)" }}>
+            {viewing?.media_type === "image" && viewing?.media_url ? (
+              <img src={viewing.media_url} alt="" className="w-full max-h-[60vh] object-contain bg-black" />
+            ) : viewing?.media_type === "video" && viewing?.media_url ? (
+              <video src={viewing.media_url} controls autoPlay className="w-full max-h-[60vh] bg-black" />
+            ) : (
+              <div className="p-8 w-full">
+                <Avatar className="w-16 h-16 mb-3 ring-2 ring-white mx-auto">
+                  <AvatarImage src={viewing?.profiles?.avatar_url || undefined} />
+                  <AvatarFallback>{viewing?.profiles?.name?.[0]}</AvatarFallback>
+                </Avatar>
+                <p className="font-semibold mb-1">{viewing?.profiles?.name}</p>
+                <p className="text-xs text-foreground/70 mb-6">{viewing && formatDistanceToNow(new Date(viewing.created_at), { addSuffix: true })}</p>
+                <p className="text-2xl font-semibold leading-snug">{viewing?.content}</p>
+              </div>
+            )}
           </div>
           {viewing?.user_id === user?.id && (
             <div className="bg-white p-4 max-h-60 overflow-y-auto">
