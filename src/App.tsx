@@ -20,6 +20,7 @@ import IncomingCallOverlay from "./components/IncomingCallOverlay";
 import PushBootstrap from "./components/PushBootstrap";
 import { ActiveCallProvider } from "./contexts/ActiveCallContext";
 import MiniCallWidget from "./components/MiniCallWidget";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const Protected = ({ children }: { children: JSX.Element }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <ThemeProvider>
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
