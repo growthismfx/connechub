@@ -86,6 +86,8 @@ export default function Chats() {
     const ch = supabase.channel("chats-list")
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_participants" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "friend_requests" }, loadPending)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
