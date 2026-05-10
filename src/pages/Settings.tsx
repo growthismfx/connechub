@@ -131,7 +131,12 @@ export default function Settings() {
   );
 
   const Row = ({ icon: Icon, label, sub, action, onClick }: any) => (
-    <button onClick={onClick} className="w-full flex items-center gap-3 p-4 text-left">
+    <div
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className={`w-full flex items-center gap-3 p-4 text-left ${onClick ? "cursor-pointer" : ""}`}
+    >
       <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--gradient-card)" }}>
         <Icon className="w-4 h-4" />
       </div>
@@ -139,8 +144,8 @@ export default function Settings() {
         <p className="font-medium text-sm">{label}</p>
         {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
       </div>
-      {action || <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-    </button>
+      {action || (onClick && <ChevronRight className="w-4 h-4 text-muted-foreground" />)}
+    </div>
   );
 
   return (
