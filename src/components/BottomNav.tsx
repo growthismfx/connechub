@@ -31,7 +31,7 @@ export default function BottomNav() {
 
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30">
-      <div ref={containerRef} className="relative flex items-center gap-1 bg-white/90 backdrop-blur rounded-full p-2 shadow-[var(--shadow-pill)]">
+      <div ref={containerRef} className="relative flex items-center gap-1 bg-white/90 backdrop-blur p-2 shadow-[var(--shadow-pill)] themed-nav">
         {indicator.ready && activeIndex >= 0 && (
           <span className="nav-liquid" style={{ left: indicator.left, width: indicator.width }} />
         )}
