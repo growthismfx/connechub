@@ -52,7 +52,7 @@
     --shadow-bubble: 0 4px 14px -6px hsl(340 60% 70% / 0.3);
   }
 
-  /* iOS theme — clean blue/grey */
+  /* iOS theme — clean blue/grey, tighter radii, flat nav */
   .theme-ios {
     --background: 220 30% 97%;
     --foreground: 220 25% 15%;
@@ -61,19 +61,25 @@
     --primary-foreground: 0 0% 100%;
     --muted: 220 14% 96%;
     --bubble-them: 220 13% 91%;
+    --radius: 0.75rem;
+    --nav-radius: 1rem;
+    --btn-radius: 0.625rem;
     --gradient-bubble: linear-gradient(135deg, hsl(211 100% 60%), hsl(211 100% 50%));
     --gradient-cta: linear-gradient(135deg, hsl(211 100% 60%), hsl(211 100% 50%));
     --gradient-card: linear-gradient(135deg, hsl(220 14% 96%), hsl(220 14% 92%));
     --gradient-page: linear-gradient(180deg, hsl(220 30% 98%), hsl(220 25% 95%));
   }
 
-  /* Glass theme — frosted blur */
+  /* Glass theme — frosted blur, soft round */
   .theme-glass {
     --background: 220 30% 96%;
     --foreground: 220 25% 12%;
     --card: 0 0% 100%;
     --primary: 250 70% 65%;
     --bubble-them: 220 30% 92%;
+    --radius: 1.5rem;
+    --nav-radius: 9999px;
+    --btn-radius: 9999px;
     --gradient-bubble: linear-gradient(135deg, hsla(220, 80%, 80%, 0.7), hsla(280, 70%, 80%, 0.7));
     --gradient-cta: linear-gradient(135deg, hsla(190, 90%, 75%, 0.8), hsla(280, 70%, 80%, 0.8));
     --gradient-card: linear-gradient(135deg, hsla(220, 50%, 95%, 0.5), hsla(280, 50%, 95%, 0.5));
@@ -87,7 +93,7 @@
     border: 1px solid rgba(255, 255, 255, 0.5);
   }
 
-  /* Samsung One UI — vibrant blue/violet */
+  /* Samsung One UI — bold rounded squircle */
   .theme-samsung {
     --background: 220 20% 96%;
     --foreground: 230 30% 15%;
@@ -95,13 +101,16 @@
     --primary: 230 80% 55%;
     --primary-foreground: 0 0% 100%;
     --bubble-them: 230 30% 92%;
+    --radius: 1.75rem;
+    --nav-radius: 2rem;
+    --btn-radius: 1.5rem;
     --gradient-bubble: linear-gradient(135deg, hsl(217 91% 60%), hsl(263 70% 60%));
     --gradient-cta: linear-gradient(135deg, hsl(217 91% 60%), hsl(263 70% 60%));
     --gradient-card: linear-gradient(135deg, hsl(217 91% 95%), hsl(263 70% 95%));
     --gradient-page: linear-gradient(180deg, hsl(220 30% 98%), hsl(230 25% 95%));
   }
 
-  /* Midnight — deep dark */
+  /* Midnight — deep dark, neon accents */
   .theme-midnight {
     --background: 230 25% 8%;
     --foreground: 220 20% 95%;
@@ -119,6 +128,9 @@
     --border: 230 20% 22%;
     --input: 230 20% 22%;
     --bubble-them: 230 20% 18%;
+    --radius: 1.25rem;
+    --nav-radius: 9999px;
+    --btn-radius: 9999px;
     --gradient-bubble: linear-gradient(135deg, hsl(250 90% 70%), hsl(280 80% 60%));
     --gradient-cta: linear-gradient(135deg, hsl(250 90% 70%), hsl(280 80% 60%));
     --gradient-card: linear-gradient(135deg, hsl(230 20% 18%), hsl(250 30% 20%));
@@ -128,6 +140,12 @@
   .theme-midnight [class*="bg-white"] {
     background: hsl(230 20% 14%) !important;
     color: hsl(220 20% 95%);
+  }
+
+  /* Default sunrise extras */
+  :root {
+    --nav-radius: 9999px;
+    --btn-radius: 9999px;
   }
 
   .dark { --background: 45 60% 96%; --foreground: 30 10% 15%; }
@@ -145,7 +163,9 @@
 
 @layer components {
   .pill {
-    @apply rounded-full bg-white shadow-[var(--shadow-pill)];
+    border-radius: var(--nav-radius);
+    background: hsl(var(--card));
+    box-shadow: var(--shadow-pill);
   }
   .bubble-me {
     background: var(--gradient-bubble);
@@ -153,6 +173,25 @@
   }
   .ring-dashed {
     border: 2px dashed hsl(340 80% 80%);
+    padding: 3px;
+    border-radius: 9999px;
+  }
+  /* Theme-aware buttons/nav */
+  .themed-btn { border-radius: var(--btn-radius); }
+  .themed-nav { border-radius: var(--nav-radius); }
+  /* Status rings (WhatsApp-style) */
+  .status-ring-unseen {
+    background: conic-gradient(from 0deg, hsl(142 70% 45%), hsl(160 70% 50%), hsl(142 70% 45%));
+    padding: 3px;
+    border-radius: 9999px;
+  }
+  .status-ring-seen {
+    background: hsl(var(--muted-foreground) / 0.4);
+    padding: 3px;
+    border-radius: 9999px;
+  }
+  .status-ring-mine {
+    background: var(--gradient-cta);
     padding: 3px;
     border-radius: 9999px;
   }
@@ -167,8 +206,20 @@
   position: absolute;
   inset: 4px auto 4px 0;
   background: var(--gradient-cta);
-  border-radius: 9999px;
+  border-radius: var(--nav-radius);
   transition: left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 4px 16px -4px hsl(var(--primary) / 0.4);
   animation: liquid-pulse 3s ease-in-out infinite;
+}
+
+/* Status story progress bars */
+@keyframes story-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+.story-bar-fill {
+  height: 100%;
+  background: white;
+  border-radius: 9999px;
+  animation: story-progress linear forwards;
 }
