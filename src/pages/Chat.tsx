@@ -207,6 +207,7 @@ export default function Chat() {
   };
 
   const presenceLabel = useMemo(() => {
+    if (isGroup && groupInfo) return `${groupInfo.memberCount} members${otherTyping ? " · someone typing…" : ""}`;
     if (!other) return "";
     if (otherTyping) return "typing…";
     if (other.is_online) return "online";
@@ -216,7 +217,7 @@ export default function Chat() {
     return connectedVia === "phone"
       ? `${other.country_code || ""}${other.assigned_number || ""}${other.username ? ` · @${other.username}` : ""}`
       : `@${other.username || ""}`;
-  }, [other, otherTyping, connectedVia]);
+  }, [other, otherTyping, connectedVia, isGroup, groupInfo]);
 
   const renderTicks = (m: any) => {
     if (m.read_at) return <CheckCheck className="w-3.5 h-3.5 inline" style={{ color: "hsl(210 100% 55%)" }} />;
@@ -232,13 +233,13 @@ export default function Chat() {
           <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <button onClick={() => !isSelf && setProfileOpen(true)} className="flex items-center gap-3 min-w-0 text-left">
+          <button onClick={() => !isSelf && !isGroup && setProfileOpen(true)} className="flex items-center gap-3 min-w-0 text-left">
             <div className="relative shrink-0">
               <Avatar className="w-10 h-10">
                 <AvatarImage src={other?.avatar_url || undefined} />
                 <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
               </Avatar>
-              {other?.is_online && (
+              {!isGroup && other?.is_online && (
                 <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
               )}
             </div>
@@ -250,7 +251,7 @@ export default function Chat() {
             </div>
           </button>
         </div>
-        {!isSelf && (
+        {!isSelf && !isGroup && (
           <div className="flex gap-2">
             <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
               <Phone className="w-4 h-4" />
