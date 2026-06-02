@@ -85,8 +85,6 @@ export default function Chat() {
         setIsSelf(true);
       }
     })();
-      }
-    })();
   }, [id, user]);
 
   // Build sender→name map for group chats
@@ -104,7 +102,6 @@ export default function Chat() {
     })();
   }, [isGroup, id]);
 
-  const _ignored = () => {
 
   // Subscribe to other user's profile updates (online/last_seen)
   useEffect(() => {
