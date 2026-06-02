@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Settings as SettingsIcon, Plus, UserPlus, BookmarkPlus, Pin, BellOff } from "lucide-react";
+import { Search, Settings as SettingsIcon, Plus, UserPlus, BookmarkPlus, Pin, BellOff, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
@@ -27,7 +27,7 @@ export default function Chats() {
 
     const { data: convs } = await supabase
       .from("conversations")
-      .select("id, last_message, last_message_at, is_group, name")
+      .select("id, last_message, last_message_at, is_group, name, avatar_url")
       .in("id", ids)
       .order("last_message_at", { ascending: false });
 
@@ -50,11 +50,16 @@ export default function Chats() {
 
     const mapped = (convs || []).map((c: any) => {
       const part: any = partMap.get(c.id);
-      const otherProfile = otherMap.get(c.id);
+      const convOthers = (others || []).filter((o: any) => o.conversation_id === c.id);
+      const otherProfile = c.is_group
+        ? { name: c.name || "Group", avatar_url: c.avatar_url, is_online: false, isGroup: true, memberCount: convOthers.length + 1 }
+        : (convOthers[0] ? profMap.get(convOthers[0].user_id) : null) || { name: c.name || "Chat", avatar_url: null, is_online: false };
+      const otherId = c.is_group ? null : convOthers[0]?.user_id;
       return {
         id: c.id,
-        other: otherProfile || { name: c.name || "Chat", avatar_url: null, is_online: false },
-        otherId: (others || []).find((o: any) => o.conversation_id === c.id)?.user_id,
+        is_group: c.is_group,
+        other: otherProfile,
+        otherId,
         last_message: c.last_message,
         last_message_at: c.last_message_at,
         via: part?.connected_via,
