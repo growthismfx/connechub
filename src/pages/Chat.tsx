@@ -286,6 +286,11 @@ export default function Chat() {
             <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
               <div className="max-w-[75%] relative">
                 <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
+                  {isGroup && !me && (
+                    <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--primary))" }}>
+                      {senderMap[m.sender_id]?.name || "Member"}
+                    </p>
+                  )}
                   {m.message_type === "call" ? (
                     <p className="text-sm flex items-center gap-2">
                       {(m.content || "").toLowerCase().includes("missed") ? (
