@@ -85,7 +85,26 @@ export default function Chat() {
         setIsSelf(true);
       }
     })();
+      }
+    })();
   }, [id, user]);
+
+  // Build sender→name map for group chats
+  const [senderMap, setSenderMap] = useState<Record<string, { name: string; avatar_url: string | null }>>({});
+  useEffect(() => {
+    if (!isGroup || !id) return;
+    (async () => {
+      const { data: parts } = await supabase.from("conversation_participants").select("user_id").eq("conversation_id", id);
+      const ids = (parts || []).map((p: any) => p.user_id);
+      if (!ids.length) return;
+      const { data: profs } = await supabase.from("profiles").select("id, name, avatar_url").in("id", ids);
+      const m: Record<string, any> = {};
+      (profs || []).forEach((p: any) => { m[p.id] = { name: p.name, avatar_url: p.avatar_url }; });
+      setSenderMap(m);
+    })();
+  }, [isGroup, id]);
+
+  const _ignored = () => {
 
   // Subscribe to other user's profile updates (online/last_seen)
   useEffect(() => {
