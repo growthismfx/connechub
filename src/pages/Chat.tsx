@@ -27,6 +27,8 @@ export default function Chat() {
   const stopTypingRef = useRef<number | null>(null);
 
   const [isSelf, setIsSelf] = useState(false);
+  const [isGroup, setIsGroup] = useState(false);
+  const [groupInfo, setGroupInfo] = useState<{ name: string; avatar_url: string | null; memberCount: number } | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
 
@@ -52,19 +54,32 @@ export default function Chat() {
   useEffect(() => {
     if (!user || !id) return;
     (async () => {
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("id, is_group, name, avatar_url")
+        .eq("id", id)
+        .maybeSingle();
       const { data: parts } = await supabase
         .from("conversation_participants")
         .select("user_id, connected_via")
         .eq("conversation_id", id);
       const me = parts?.find((p: any) => p.user_id === user.id);
-      const otherP = parts?.find((p: any) => p.user_id !== user.id);
       if (me?.connected_via) setConnectedVia(me.connected_via as any);
+
+      if (conv?.is_group) {
+        setIsGroup(true);
+        setIsSelf(false);
+        setGroupInfo({ name: conv.name || "Group", avatar_url: conv.avatar_url, memberCount: parts?.length || 0 });
+        setOther({ name: conv.name || "Group", avatar_url: conv.avatar_url });
+        return;
+      }
+
+      const otherP = parts?.find((p: any) => p.user_id !== user.id);
       if (otherP) {
         const { data: prof } = await supabase.from("profiles").select("*").eq("id", otherP.user_id).maybeSingle();
         setOther(prof);
         setIsSelf(false);
       } else {
-        // Self-chat: only one participant (me)
         const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
         setOther({ ...(prof || {}), name: "You (Message yourself)" });
         setIsSelf(true);
