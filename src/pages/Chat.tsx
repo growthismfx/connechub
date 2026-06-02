@@ -27,6 +27,8 @@ export default function Chat() {
   const stopTypingRef = useRef<number | null>(null);
 
   const [isSelf, setIsSelf] = useState(false);
+  const [isGroup, setIsGroup] = useState(false);
+  const [groupInfo, setGroupInfo] = useState<{ name: string; avatar_url: string | null; memberCount: number } | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
 
@@ -52,25 +54,54 @@ export default function Chat() {
   useEffect(() => {
     if (!user || !id) return;
     (async () => {
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("id, is_group, name, avatar_url")
+        .eq("id", id)
+        .maybeSingle();
       const { data: parts } = await supabase
         .from("conversation_participants")
         .select("user_id, connected_via")
         .eq("conversation_id", id);
       const me = parts?.find((p: any) => p.user_id === user.id);
-      const otherP = parts?.find((p: any) => p.user_id !== user.id);
       if (me?.connected_via) setConnectedVia(me.connected_via as any);
+
+      if (conv?.is_group) {
+        setIsGroup(true);
+        setIsSelf(false);
+        setGroupInfo({ name: conv.name || "Group", avatar_url: conv.avatar_url, memberCount: parts?.length || 0 });
+        setOther({ name: conv.name || "Group", avatar_url: conv.avatar_url });
+        return;
+      }
+
+      const otherP = parts?.find((p: any) => p.user_id !== user.id);
       if (otherP) {
         const { data: prof } = await supabase.from("profiles").select("*").eq("id", otherP.user_id).maybeSingle();
         setOther(prof);
         setIsSelf(false);
       } else {
-        // Self-chat: only one participant (me)
         const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
         setOther({ ...(prof || {}), name: "You (Message yourself)" });
         setIsSelf(true);
       }
     })();
   }, [id, user]);
+
+  // Build sender→name map for group chats
+  const [senderMap, setSenderMap] = useState<Record<string, { name: string; avatar_url: string | null }>>({});
+  useEffect(() => {
+    if (!isGroup || !id) return;
+    (async () => {
+      const { data: parts } = await supabase.from("conversation_participants").select("user_id").eq("conversation_id", id);
+      const ids = (parts || []).map((p: any) => p.user_id);
+      if (!ids.length) return;
+      const { data: profs } = await supabase.from("profiles").select("id, name, avatar_url").in("id", ids);
+      const m: Record<string, any> = {};
+      (profs || []).forEach((p: any) => { m[p.id] = { name: p.name, avatar_url: p.avatar_url }; });
+      setSenderMap(m);
+    })();
+  }, [isGroup, id]);
+
 
   // Subscribe to other user's profile updates (online/last_seen)
   useEffect(() => {
@@ -192,6 +223,7 @@ export default function Chat() {
   };
 
   const presenceLabel = useMemo(() => {
+    if (isGroup && groupInfo) return `${groupInfo.memberCount} members${otherTyping ? " · someone typing…" : ""}`;
     if (!other) return "";
     if (otherTyping) return "typing…";
     if (other.is_online) return "online";
@@ -201,7 +233,7 @@ export default function Chat() {
     return connectedVia === "phone"
       ? `${other.country_code || ""}${other.assigned_number || ""}${other.username ? ` · @${other.username}` : ""}`
       : `@${other.username || ""}`;
-  }, [other, otherTyping, connectedVia]);
+  }, [other, otherTyping, connectedVia, isGroup, groupInfo]);
 
   const renderTicks = (m: any) => {
     if (m.read_at) return <CheckCheck className="w-3.5 h-3.5 inline" style={{ color: "hsl(210 100% 55%)" }} />;
@@ -217,13 +249,13 @@ export default function Chat() {
           <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <button onClick={() => !isSelf && setProfileOpen(true)} className="flex items-center gap-3 min-w-0 text-left">
+          <button onClick={() => !isSelf && !isGroup && setProfileOpen(true)} className="flex items-center gap-3 min-w-0 text-left">
             <div className="relative shrink-0">
               <Avatar className="w-10 h-10">
                 <AvatarImage src={other?.avatar_url || undefined} />
                 <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
               </Avatar>
-              {other?.is_online && (
+              {!isGroup && other?.is_online && (
                 <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
               )}
             </div>
@@ -235,7 +267,7 @@ export default function Chat() {
             </div>
           </button>
         </div>
-        {!isSelf && (
+        {!isSelf && !isGroup && (
           <div className="flex gap-2">
             <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
               <Phone className="w-4 h-4" />
@@ -254,6 +286,11 @@ export default function Chat() {
             <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
               <div className="max-w-[75%] relative">
                 <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
+                  {isGroup && !me && (
+                    <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--primary))" }}>
+                      {senderMap[m.sender_id]?.name || "Member"}
+                    </p>
+                  )}
                   {m.message_type === "call" ? (
                     <p className="text-sm flex items-center gap-2">
                       {(m.content || "").toLowerCase().includes("missed") ? (

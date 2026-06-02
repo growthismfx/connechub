@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Chats from "./pages/Chats";
 import Chat from "./pages/Chat";
 import StartChat from "./pages/StartChat";
+import NewGroup from "./pages/NewGroup";
 import Discover from "./pages/Discover";
 import Status from "./pages/Status";
 import Calls from "./pages/Calls";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/chats" element={<Protected><Chats /></Protected>} />
             <Route path="/chat/new/:userId" element={<Protected><StartChat /></Protected>} />
+            <Route path="/groups/new" element={<Protected><NewGroup /></Protected>} />
             <Route path="/chat/:id" element={<Protected><Chat /></Protected>} />
             <Route path="/discover" element={<Protected><Discover /></Protected>} />
             <Route path="/status" element={<Protected><Status /></Protected>} />
