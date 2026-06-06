@@ -8,6 +8,7 @@ import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck, Phone
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import ProfileSheet from "@/components/ProfileSheet";
+import { encryptForRecipients, decryptMessage } from "@/lib/e2ee";
 
 export default function Chat() {
   const { id } = useParams();
@@ -31,6 +32,7 @@ export default function Chat() {
   const [groupInfo, setGroupInfo] = useState<{ name: string; avatar_url: string | null; memberCount: number } | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
 
   // Load my starred ids
   useEffect(() => {
@@ -63,6 +65,7 @@ export default function Chat() {
         .from("conversation_participants")
         .select("user_id, connected_via")
         .eq("conversation_id", id);
+      setParticipantIds((parts || []).map((p: any) => p.user_id));
       const me = parts?.find((p: any) => p.user_id === user.id);
       if (me?.connected_via) setConnectedVia(me.connected_via as any);
 
@@ -113,12 +116,20 @@ export default function Chat() {
     return () => { supabase.removeChannel(ch); };
   }, [other?.id]);
 
+  // Helper: decrypt a single message in place
+  const decryptIfNeeded = async (m: any) => {
+    if (!m?.is_encrypted || !user) return m;
+    const pt = await decryptMessage(user.id, m.content, m.iv, m.encrypted_keys || {});
+    return { ...m, content: pt ?? "🔒 [unable to decrypt]" };
+  };
+
   // Load messages + realtime updates
   useEffect(() => {
     if (!id || !user) return;
     supabase.from("messages").select("*").eq("conversation_id", id).order("created_at").then(async ({ data }) => {
       const list = data || [];
-      setMessages(list);
+      const decrypted = await Promise.all(list.map(decryptIfNeeded));
+      setMessages(decrypted);
       // Mark incoming undelivered as delivered, then as read
       const incoming = list.filter((m: any) => m.sender_id !== user.id);
       const toDeliver = incoming.filter((m: any) => !m.delivered_at).map((m: any) => m.id);
@@ -131,7 +142,8 @@ export default function Chat() {
     const ch = supabase.channel(`msgs-${id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
         async (p) => {
-          const m: any = p.new;
+          const raw: any = p.new;
+          const m = await decryptIfNeeded(raw);
           setMessages((prev) => prev.find((x) => x.id === m.id) ? prev : [...prev, m]);
           if (m.sender_id !== user.id) {
             const now = new Date().toISOString();
@@ -139,7 +151,7 @@ export default function Chat() {
           }
         })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
-        (p) => setMessages((prev) => prev.map((m) => m.id === (p.new as any).id ? { ...m, ...(p.new as any) } : m)))
+        (p) => setMessages((prev) => prev.map((m) => m.id === (p.new as any).id ? { ...m, ...(p.new as any), content: m.content } : m)))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id, user]);
@@ -197,7 +209,13 @@ export default function Chat() {
     const content = text.trim();
     setText("");
     sendTyping(false);
-    const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, content });
+    // Try E2EE: encrypt for all conversation participants (including self for multi-device read).
+    const recipients = participantIds.length ? participantIds : [user.id];
+    const enc = await encryptForRecipients(content, recipients);
+    const payload = enc
+      ? { conversation_id: id, sender_id: user.id, content: enc.ciphertext, iv: enc.iv, encrypted_keys: enc.encrypted_keys, is_encrypted: true }
+      : { conversation_id: id, sender_id: user.id, content };
+    const { error } = await supabase.from("messages").insert(payload as any);
     if (error) toast.error(error.message);
     setSending(false);
   };
