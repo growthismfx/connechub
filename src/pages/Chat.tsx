@@ -116,12 +116,20 @@ export default function Chat() {
     return () => { supabase.removeChannel(ch); };
   }, [other?.id]);
 
+  // Helper: decrypt a single message in place
+  const decryptIfNeeded = async (m: any) => {
+    if (!m?.is_encrypted || !user) return m;
+    const pt = await decryptMessage(user.id, m.content, m.iv, m.encrypted_keys || {});
+    return { ...m, content: pt ?? "🔒 [unable to decrypt]" };
+  };
+
   // Load messages + realtime updates
   useEffect(() => {
     if (!id || !user) return;
     supabase.from("messages").select("*").eq("conversation_id", id).order("created_at").then(async ({ data }) => {
       const list = data || [];
-      setMessages(list);
+      const decrypted = await Promise.all(list.map(decryptIfNeeded));
+      setMessages(decrypted);
       // Mark incoming undelivered as delivered, then as read
       const incoming = list.filter((m: any) => m.sender_id !== user.id);
       const toDeliver = incoming.filter((m: any) => !m.delivered_at).map((m: any) => m.id);
@@ -134,7 +142,8 @@ export default function Chat() {
     const ch = supabase.channel(`msgs-${id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
         async (p) => {
-          const m: any = p.new;
+          const raw: any = p.new;
+          const m = await decryptIfNeeded(raw);
           setMessages((prev) => prev.find((x) => x.id === m.id) ? prev : [...prev, m]);
           if (m.sender_id !== user.id) {
             const now = new Date().toISOString();
@@ -142,7 +151,7 @@ export default function Chat() {
           }
         })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
-        (p) => setMessages((prev) => prev.map((m) => m.id === (p.new as any).id ? { ...m, ...(p.new as any) } : m)))
+        (p) => setMessages((prev) => prev.map((m) => m.id === (p.new as any).id ? { ...m, ...(p.new as any), content: m.content } : m)))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id, user]);
