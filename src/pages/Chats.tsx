@@ -101,7 +101,7 @@ export default function Chats() {
   return (
     <div className="min-h-screen pb-32 px-5 pt-12">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Chats</h1>
+        <h1 className="text-3xl font-bold" style={{ color: "hsl(var(--primary))" }}>hellow</h1>
         <div className="flex gap-2">
           <button onClick={() => nav("/requests")} className="relative w-11 h-11 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
             <UserPlus className="w-5 h-5" />
