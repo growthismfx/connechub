@@ -32,6 +32,7 @@ export default function Chat() {
   const [groupInfo, setGroupInfo] = useState<{ name: string; avatar_url: string | null; memberCount: number } | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
 
   // Load my starred ids
   useEffect(() => {
