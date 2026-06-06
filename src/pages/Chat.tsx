@@ -209,7 +209,13 @@ export default function Chat() {
     const content = text.trim();
     setText("");
     sendTyping(false);
-    const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, content });
+    // Try E2EE: encrypt for all conversation participants (including self for multi-device read).
+    const recipients = participantIds.length ? participantIds : [user.id];
+    const enc = await encryptForRecipients(content, recipients);
+    const payload = enc
+      ? { conversation_id: id, sender_id: user.id, content: enc.ciphertext, iv: enc.iv, encrypted_keys: enc.encrypted_keys, is_encrypted: true }
+      : { conversation_id: id, sender_id: user.id, content };
+    const { error } = await supabase.from("messages").insert(payload as any);
     if (error) toast.error(error.message);
     setSending(false);
   };
