@@ -239,7 +239,10 @@ export type Database = {
           conversation_id: string
           created_at: string | null
           delivered_at: string | null
+          encrypted_keys: Json | null
           id: string
+          is_encrypted: boolean
+          iv: string | null
           media_url: string | null
           message_type: string | null
           read_at: string | null
@@ -253,7 +256,10 @@ export type Database = {
           conversation_id: string
           created_at?: string | null
           delivered_at?: string | null
+          encrypted_keys?: Json | null
           id?: string
+          is_encrypted?: boolean
+          iv?: string | null
           media_url?: string | null
           message_type?: string | null
           read_at?: string | null
@@ -267,7 +273,10 @@ export type Database = {
           conversation_id?: string
           created_at?: string | null
           delivered_at?: string | null
+          encrypted_keys?: Json | null
           id?: string
+          is_encrypted?: boolean
+          iv?: string | null
           media_url?: string | null
           message_type?: string | null
           read_at?: string | null
@@ -302,6 +311,7 @@ export type Database = {
           is_online: boolean | null
           last_seen: string | null
           name: string | null
+          public_key: string | null
           read_receipts: boolean
           show_last_seen: boolean
           show_profile_photo: boolean
@@ -319,6 +329,7 @@ export type Database = {
           is_online?: boolean | null
           last_seen?: string | null
           name?: string | null
+          public_key?: string | null
           read_receipts?: boolean
           show_last_seen?: boolean
           show_profile_photo?: boolean
@@ -336,6 +347,7 @@ export type Database = {
           is_online?: boolean | null
           last_seen?: string | null
           name?: string | null
+          public_key?: string | null
           read_receipts?: boolean
           show_last_seen?: boolean
           show_profile_photo?: boolean
