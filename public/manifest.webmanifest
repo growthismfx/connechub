@@ -1,22 +1,16 @@
 {
-  "name": "ConnectHub",
-  "short_name": "ConnectHub",
-  "description": "Real-time messaging, voice and video calling.",
+  "name": "hellow",
+  "short_name": "hellow",
+  "description": "A new way to connect. Fast, secure, and beautiful messaging for everyone.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#fb7185",
+  "theme_color": "#8B5CF6",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-512.png",
+      "src": "/__l5e/assets-v1/fac6b153-3f92-4516-83f4-e07555bf3561/hellow-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

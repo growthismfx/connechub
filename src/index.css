@@ -4,52 +4,52 @@
 
 @layer base {
   :root {
-    --background: 45 60% 96%;
-    --foreground: 30 10% 15%;
+    --background: 0 0% 100%;
+    --foreground: 240 15% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 30 10% 15%;
+    --card-foreground: 240 15% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 30 10% 15%;
+    --popover-foreground: 240 15% 12%;
 
-    --primary: 25 95% 75%;
-    --primary-foreground: 30 20% 20%;
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 55% 92%;
-    --secondary-foreground: 30 10% 20%;
+    --secondary: 258 40% 96%;
+    --secondary-foreground: 240 15% 15%;
 
-    --muted: 40 30% 94%;
-    --muted-foreground: 30 8% 45%;
+    --muted: 240 10% 96%;
+    --muted-foreground: 240 5% 50%;
 
-    --accent: 340 85% 88%;
-    --accent-foreground: 30 20% 20%;
+    --accent: 258 100% 96%;
+    --accent-foreground: 258 80% 35%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 25% 88%;
-    --input: 40 25% 90%;
-    --ring: 25 95% 75%;
+    --border: 240 10% 92%;
+    --input: 240 10% 94%;
+    --ring: 258 90% 66%;
 
-    --radius: 1.25rem;
+    --radius: 1rem;
 
     /* Brand */
-    --bg-cream: 45 70% 96%;
+    --bg-cream: 0 0% 100%;
     --pill: 0 0% 100%;
-    --bubble-them: 40 50% 94%;
+    --bubble-them: 240 10% 96%;
     --online: 142 70% 45%;
 
     /* Gradients */
-    --gradient-bubble: linear-gradient(135deg, hsl(35 100% 85%), hsl(340 90% 88%));
-    --gradient-cta: linear-gradient(135deg, hsl(35 100% 82%), hsl(340 85% 85%));
-    --gradient-card: linear-gradient(135deg, hsl(35 100% 90% / 0.6), hsl(340 90% 90% / 0.7));
-    --gradient-page: linear-gradient(180deg, hsl(45 75% 96%), hsl(40 70% 94%));
+    --gradient-bubble: linear-gradient(135deg, hsl(258 90% 70%), hsl(270 90% 65%));
+    --gradient-cta: linear-gradient(135deg, hsl(258 90% 66%), hsl(270 85% 60%));
+    --gradient-card: linear-gradient(135deg, hsl(258 100% 97%), hsl(270 100% 97%));
+    --gradient-page: linear-gradient(180deg, hsl(0 0% 100%), hsl(258 40% 99%));
 
     /* Shadows */
-    --shadow-soft: 0 8px 24px -8px hsl(30 30% 60% / 0.18);
-    --shadow-pill: 0 6px 20px -6px hsl(30 30% 50% / 0.15);
-    --shadow-bubble: 0 4px 14px -6px hsl(340 60% 70% / 0.3);
+    --shadow-soft: 0 8px 24px -8px hsl(258 40% 60% / 0.18);
+    --shadow-pill: 0 6px 20px -6px hsl(258 40% 50% / 0.15);
+    --shadow-bubble: 0 8px 20px -6px hsl(258 80% 60% / 0.35);
   }
 
   /* iOS theme — clean blue/grey, tighter radii, flat nav */
