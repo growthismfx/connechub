@@ -65,6 +65,7 @@ export default function Chat() {
         .from("conversation_participants")
         .select("user_id, connected_via")
         .eq("conversation_id", id);
+      setParticipantIds((parts || []).map((p: any) => p.user_id));
       const me = parts?.find((p: any) => p.user_id === user.id);
       if (me?.connected_via) setConnectedVia(me.connected_via as any);
 
