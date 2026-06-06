@@ -57,6 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const setOnline = (online: boolean) =>
       supabase.from("profiles").update({ is_online: online, last_seen: new Date().toISOString() }).eq("id", user.id);
     setOnline(true);
+    // Ensure E2EE keypair exists & published
+    ensureKeypair(user.id).catch((e) => console.warn("ensureKeypair", e));
     const onUnload = () => { setOnline(false); };
     window.addEventListener("beforeunload", onUnload);
     const iv = setInterval(() => setOnline(true), 30000);
