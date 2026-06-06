@@ -8,6 +8,7 @@ import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck, Phone
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import ProfileSheet from "@/components/ProfileSheet";
+import { encryptForRecipients, decryptMessage } from "@/lib/e2ee";
 
 export default function Chat() {
   const { id } = useParams();
