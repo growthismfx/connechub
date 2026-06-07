@@ -123,30 +123,36 @@ export default function Settings() {
     toast.success(enabled ? "Notifications enabled" : "Notifications disabled");
   };
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="mb-6">
-      <p className="text-xs text-muted-foreground uppercase tracking-wider px-3 mb-2">{title}</p>
-      <div className="bg-white rounded-2xl shadow-[var(--shadow-soft)] divide-y divide-border/50">{children}</div>
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const toggle = (k: string) => setOpenKey(openKey === k ? null : k);
+
+  const NavRow = ({ icon: Icon, label, k }: any) => {
+    const open = openKey === k;
+    return (
+      <button
+        onClick={() => toggle(k)}
+        className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors"
+      >
+        <Icon className="w-[18px] h-[18px] text-muted-foreground" />
+        <span className="flex-1 text-[15px] font-medium">{label}</span>
+        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+    );
+  };
+
+  const Panel = ({ k, children }: any) =>
+    openKey === k ? <div className="px-5 pb-4 animate-fade-in space-y-3">{children}</div> : null;
+
+  const Toggle = ({ label, sub, checked, onChange, disabled }: any) => (
+    <div className="flex items-center justify-between gap-3 py-2">
+      <div className="min-w-0">
+        <p className="text-sm font-medium">{label}</p>
+        {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
     </div>
   );
 
-  const Row = ({ icon: Icon, label, sub, action, onClick }: any) => (
-    <div
-      onClick={onClick}
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      className={`w-full flex items-center gap-3 p-4 text-left ${onClick ? "cursor-pointer" : ""}`}
-    >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--gradient-card)" }}>
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm">{label}</p>
-        {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
-      </div>
-      {action || (onClick && <ChevronRight className="w-4 h-4 text-muted-foreground" />)}
-    </div>
-  );
 
   return (
     <div className="min-h-screen pb-32 px-5 pt-12">
