@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Moon, Palette, Camera } from "lucide-react";
+import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Palette, Camera, Languages, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
