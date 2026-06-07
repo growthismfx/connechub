@@ -150,29 +150,30 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen pb-32 px-5 pt-12">
-      <h1 className="text-3xl font-bold mb-6">Settings</h1>
+      <div className="flex items-center justify-between mb-2 animate-fade-in">
+        <h1 className="text-[26px] font-bold tracking-tight">Profile</h1>
+        <button onClick={() => setEditOpen(true)} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+          <Edit3 className="w-4 h-4" />
+        </button>
+      </div>
 
-      {/* Profile card */}
-      <div className="bg-white rounded-3xl p-5 shadow-[var(--shadow-soft)] mb-6 flex items-center gap-4">
+      {/* Centered profile header */}
+      <div className="flex flex-col items-center text-center mb-8 animate-scale-in">
         <button onClick={() => fileRef.current?.click()} className="relative shrink-0" disabled={uploading}>
-          <Avatar className="w-16 h-16">
+          <Avatar className="w-28 h-28 ring-4 ring-white shadow-[var(--shadow-bubble)]">
             <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="text-xl">{profile?.name?.[0]}</AvatarFallback>
+            <AvatarFallback className="text-3xl">{profile?.name?.[0]}</AvatarFallback>
           </Avatar>
-          <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-[var(--shadow-pill)] border" title="Change photo">
+          <span className="absolute bottom-1 right-1 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-[var(--shadow-pill)]" style={{ background: "var(--gradient-cta)" }}>
             <Camera className="w-3.5 h-3.5" />
           </span>
         </button>
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && onAvatarChange(e.target.files[0])} />
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-lg truncate">{profile?.name}</p>
-          <p className="text-xs text-muted-foreground truncate">@{profile?.username}</p>
-          <p className="text-xs text-muted-foreground truncate">{profile?.status}</p>
-        </div>
-        <button onClick={() => setEditOpen(true)} className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--gradient-cta)" }}>
-          <Edit3 className="w-4 h-4" />
-        </button>
+        <p className="font-bold text-xl mt-4">{profile?.name}</p>
+        <p className="text-sm text-muted-foreground">@{profile?.username}</p>
+        {profile?.status && <p className="text-sm mt-2">{profile.status}</p>}
       </div>
+
 
       <Section title="Account">
         <Row icon={User} label="Phone number" sub={number} action={
