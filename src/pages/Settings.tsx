@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Moon, Palette, Camera } from "lucide-react";
+import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Palette, Camera, Languages, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
@@ -123,30 +123,36 @@ export default function Settings() {
     toast.success(enabled ? "Notifications enabled" : "Notifications disabled");
   };
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="mb-6">
-      <p className="text-xs text-muted-foreground uppercase tracking-wider px-3 mb-2">{title}</p>
-      <div className="bg-white rounded-2xl shadow-[var(--shadow-soft)] divide-y divide-border/50">{children}</div>
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const toggle = (k: string) => setOpenKey(openKey === k ? null : k);
+
+  const NavRow = ({ icon: Icon, label, k }: any) => {
+    const open = openKey === k;
+    return (
+      <button
+        onClick={() => toggle(k)}
+        className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors"
+      >
+        <Icon className="w-[18px] h-[18px] text-muted-foreground" />
+        <span className="flex-1 text-[15px] font-medium">{label}</span>
+        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+    );
+  };
+
+  const Panel = ({ k, children }: any) =>
+    openKey === k ? <div className="px-5 pb-4 animate-fade-in space-y-3">{children}</div> : null;
+
+  const Toggle = ({ label, sub, checked, onChange, disabled }: any) => (
+    <div className="flex items-center justify-between gap-3 py-2">
+      <div className="min-w-0">
+        <p className="text-sm font-medium">{label}</p>
+        {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
     </div>
   );
 
-  const Row = ({ icon: Icon, label, sub, action, onClick }: any) => (
-    <div
-      onClick={onClick}
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      className={`w-full flex items-center gap-3 p-4 text-left ${onClick ? "cursor-pointer" : ""}`}
-    >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--gradient-card)" }}>
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm">{label}</p>
-        {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
-      </div>
-      {action || (onClick && <ChevronRight className="w-4 h-4 text-muted-foreground" />)}
-    </div>
-  );
 
   return (
     <div className="min-h-screen pb-32 px-5 pt-12">
@@ -174,65 +180,75 @@ export default function Settings() {
         {profile?.status && <p className="text-sm mt-2">{profile.status}</p>}
       </div>
 
+      <div className="bg-white rounded-3xl shadow-[var(--shadow-soft)] divide-y divide-border/50 overflow-hidden mb-6 animate-fade-in">
+        <NavRow icon={User} label="Account" k="account" />
+        <Panel k="account">
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium">Phone</p>
+              <p className="text-xs text-muted-foreground">{number}</p>
+            </div>
+            <button onClick={() => { navigator.clipboard.writeText(number); toast.success("Copied"); }} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"><Copy className="w-4 h-4" /></button>
+          </div>
+          <div className="py-2">
+            <p className="text-sm font-medium">Username</p>
+            <p className="text-xs text-muted-foreground">@{profile?.username}</p>
+          </div>
+        </Panel>
 
-      <Section title="Account">
-        <Row icon={User} label="Phone number" sub={number} action={
-          <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(number); toast.success("Copied"); }} className="p-1"><Copy className="w-4 h-4 text-muted-foreground" /></button>
-        } />
-        <Row icon={User} label="Username" sub={`@${profile?.username}`} />
-      </Section>
+        <NavRow icon={Lock} label="Privacy" k="privacy" />
+        <Panel k="privacy">
+          <Toggle label="Read receipts" sub="Show when you've read messages" checked={readReceipts} onChange={setReadReceipts} />
+          <Toggle label="Online status" sub="Show when you're online" checked={showOnline} onChange={setShowOnline} />
+        </Panel>
 
-      <Section title="Privacy">
-        <Row icon={Lock} label="Read receipts" sub="Show when you've read messages" action={<Switch checked={readReceipts} onCheckedChange={setReadReceipts} />} />
-        <Row icon={User} label="Online status" sub="Show when you're online" action={<Switch checked={showOnline} onCheckedChange={setShowOnline} />} />
-      </Section>
+        <NavRow icon={Bell} label="Notifications" k="notif" />
+        <Panel k="notif">
+          <Toggle label="In-app alerts" sub="Show alerts while open" checked={notifications} onChange={handleNotificationsToggle} />
+          <Toggle label="Push notifications" sub={pushSupported ? "Alerts when app is closed" : "Not supported here"} checked={pushEnabled} onChange={handlePushToggle} disabled={!pushSupported} />
+        </Panel>
 
-      <Section title="Notifications">
-        <Row icon={Bell} label="In-app notifications" sub="Show alerts while the app is open" action={<Switch checked={notifications} onCheckedChange={handleNotificationsToggle} />} />
-        <Row
-          icon={Bell}
-          label="Push notifications"
-          sub={pushSupported ? "Receive messages and calls when the app is closed" : "Not supported in this browser"}
-          action={<Switch disabled={!pushSupported} checked={pushEnabled} onCheckedChange={handlePushToggle} />}
-        />
-      </Section>
-
-      <Section title="Appearance">
-        <div className="p-4">
-          <p className="text-sm font-medium mb-3 flex items-center gap-2"><Palette className="w-4 h-4" /> Theme</p>
+        <NavRow icon={Palette} label="Appearance" k="appear" />
+        <Panel k="appear">
           <div className="grid grid-cols-2 gap-2">
             {THEMES.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTheme(t.id)}
                 className={`relative rounded-2xl p-3 text-left border-2 transition-all ${theme === t.id ? "border-foreground" : "border-transparent"}`}
-                style={{ background: t.preview, backdropFilter: "blur(8px)" }}
+                style={{ background: t.preview }}
               >
                 <p className="font-semibold text-sm" style={{ color: t.id === "midnight" || t.id === "samsung" ? "white" : "inherit" }}>{t.name}</p>
                 <p className="text-[10px] opacity-80" style={{ color: t.id === "midnight" || t.id === "samsung" ? "white" : "inherit" }}>{t.description}</p>
               </button>
             ))}
           </div>
-        </div>
-      </Section>
+        </Panel>
 
-      <Section title="Install">
-        <div className="p-4 flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-medium text-sm">Install ConnectHub</p>
-            <p className="text-xs text-muted-foreground">Add the app to your home screen for full-screen access.</p>
+        <NavRow icon={Languages} label="Language" k="lang" />
+        <Panel k="lang">
+          <p className="text-sm text-muted-foreground">English (US) — more languages coming soon.</p>
+        </Panel>
+
+        <NavRow icon={HelpCircle} label="Help & Support" k="help" />
+        <Panel k="help">
+          <p className="text-sm text-muted-foreground mb-2">Need a hand? We're here for you.</p>
+          <a href="mailto:support@hellow.app" className="text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>support@hellow.app</a>
+        </Panel>
+
+        <NavRow icon={SettingsIcon} label="Install App" k="install" />
+        <Panel k="install">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">Add hellow to your home screen.</p>
+            <InstallAppButton />
           </div>
-          <InstallAppButton />
-        </div>
-      </Section>
-
-      <Section title="Support">
-        <Row icon={HelpCircle} label="Help & FAQ" />
-      </Section>
+        </Panel>
+      </div>
 
       <Button onClick={signOut} variant="ghost" className="w-full rounded-full text-destructive">
         <LogOut className="w-4 h-4 mr-2" /> Sign out
       </Button>
+
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="rounded-3xl border-0">
