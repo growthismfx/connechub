@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Plus, Pin, BellOff } from "lucide-react";
-import { toast } from "sonner";
+
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { formatDistanceToNow } from "date-fns";
