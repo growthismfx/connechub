@@ -267,7 +267,7 @@ export default function Chat() {
           <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <button onClick={() => !isSelf && !isGroup && setProfileOpen(true)} className="flex items-center gap-3 min-w-0 text-left">
+          <button onClick={() => { if (isGroup) nav(`/group/${id}/settings`); else if (!isSelf) setProfileOpen(true); }} className="flex items-center gap-3 min-w-0 text-left">
             <div className="relative shrink-0">
               <Avatar className="w-10 h-10">
                 <AvatarImage src={other?.avatar_url || undefined} />
@@ -294,6 +294,11 @@ export default function Chat() {
               <Video className="w-4 h-4" />
             </button>
           </div>
+        )}
+        {isGroup && (
+          <button onClick={() => nav(`/group/${id}/settings`)} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center" aria-label="Group settings">
+            <Users className="w-4 h-4" />
+          </button>
         )}
       </div>
 
