@@ -158,10 +158,33 @@
   body {
     @apply bg-background text-foreground;
     background: var(--gradient-page);
+    background-attachment: fixed;
+    position: relative;
     font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--gradient-mesh);
+    background-size: 200% 200%;
+    animation: mesh-drift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+  #root { position: relative; z-index: 1; }
 }
+
+@keyframes mesh-drift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 
 @layer components {
   .pill {
