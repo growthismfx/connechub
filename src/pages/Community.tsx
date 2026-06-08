@@ -42,7 +42,7 @@ export default function Community() {
     } else setMembers([]);
     const { data: ps } = await (supabase as any).from("community_posts").select("*").eq("community_id", id).order("created_at", { ascending: false }).limit(60);
     if (ps?.length) {
-      const aids = Array.from(new Set(ps.map((p: any) => p.author_id as string)));
+      const aids: string[] = Array.from(new Set(ps.map((p: any) => String(p.author_id))));
       const { data: profs } = await supabase.from("profiles").select("id, name, avatar_url").in("id", aids);
       const map = new Map((profs || []).map((p: any) => [p.id, p]));
       setPosts(ps.map((p: any) => ({ ...p, author: map.get(p.author_id) })));
