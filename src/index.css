@@ -40,16 +40,18 @@
     --bubble-them: 240 10% 96%;
     --online: 142 70% 45%;
 
-    /* Gradients */
-    --gradient-bubble: linear-gradient(135deg, hsl(258 90% 70%), hsl(270 90% 65%));
-    --gradient-cta: linear-gradient(135deg, hsl(258 90% 66%), hsl(270 85% 60%));
-    --gradient-card: linear-gradient(135deg, hsl(258 100% 97%), hsl(270 100% 97%));
-    --gradient-page: linear-gradient(180deg, hsl(0 0% 100%), hsl(258 40% 99%));
+    /* Live gradients */
+    --gradient-bubble: linear-gradient(135deg, hsl(258 95% 72%), hsl(285 90% 68%), hsl(310 85% 70%));
+    --gradient-cta: linear-gradient(135deg, hsl(258 95% 66%), hsl(280 90% 62%), hsl(310 85% 65%));
+    --gradient-card: linear-gradient(135deg, hsl(258 100% 97%), hsl(285 100% 97%), hsl(310 100% 98%));
+    --gradient-page: linear-gradient(180deg, hsl(280 60% 99%) 0%, hsl(258 70% 98%) 40%, hsl(220 80% 99%) 100%);
+    --gradient-mesh: radial-gradient(circle at 20% 10%, hsl(258 90% 92% / 0.7), transparent 40%), radial-gradient(circle at 85% 20%, hsl(310 85% 92% / 0.6), transparent 45%), radial-gradient(circle at 50% 90%, hsl(220 90% 95% / 0.7), transparent 50%);
 
     /* Shadows */
-    --shadow-soft: 0 8px 24px -8px hsl(258 40% 60% / 0.18);
-    --shadow-pill: 0 6px 20px -6px hsl(258 40% 50% / 0.15);
-    --shadow-bubble: 0 8px 20px -6px hsl(258 80% 60% / 0.35);
+    --shadow-soft: 0 8px 28px -10px hsl(258 50% 50% / 0.22);
+    --shadow-pill: 0 12px 32px -10px hsl(258 50% 45% / 0.22);
+    --shadow-bubble: 0 12px 28px -8px hsl(280 80% 60% / 0.4);
+
   }
 
   /* iOS theme — clean blue/grey, tighter radii, flat nav */
@@ -156,10 +158,33 @@
   body {
     @apply bg-background text-foreground;
     background: var(--gradient-page);
+    background-attachment: fixed;
+    position: relative;
     font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--gradient-mesh);
+    background-size: 200% 200%;
+    animation: mesh-drift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+  #root { position: relative; z-index: 1; }
 }
+
+@keyframes mesh-drift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 
 @layer components {
   .pill {
@@ -197,20 +222,34 @@
   }
 }
 
-/* Liquid nav indicator */
-@keyframes liquid-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+/* Water-drop navigation indicator (morphing blob) */
+@keyframes waterdrop-squish {
+  0%, 100% { border-radius: 9999px; transform: scaleY(1) scaleX(1); }
+  40% { border-radius: 60% 60% 50% 50% / 70% 70% 40% 40%; transform: scaleY(1.15) scaleX(0.9); }
+  70% { border-radius: 50% 50% 60% 60% / 40% 40% 70% 70%; transform: scaleY(0.9) scaleX(1.1); }
 }
-.nav-liquid {
+.nav-waterdrop {
   position: absolute;
-  inset: 4px auto 4px 0;
+  top: 6px;
+  bottom: 6px;
   background: var(--gradient-cta);
-  border-radius: var(--nav-radius);
-  transition: left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 16px -4px hsl(var(--primary) / 0.4);
-  animation: liquid-pulse 3s ease-in-out infinite;
+  background-size: 200% 200%;
+  border-radius: 9999px;
+  box-shadow: 0 6px 20px -4px hsl(var(--primary) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.3);
+  transition: left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: gradient-shift 5s ease infinite;
+  z-index: 0;
 }
+.nav-waterdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: waterdrop-squish 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-fill-mode: both;
+  background: inherit;
+}
+
 
 /* Status story progress bars */
 @keyframes story-progress {

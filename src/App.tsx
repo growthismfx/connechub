@@ -15,6 +15,8 @@ import Status from "./pages/Status";
 import Calls from "./pages/Calls";
 import Settings from "./pages/Settings";
 import Requests from "./pages/Requests";
+import Community from "./pages/Community";
+import GroupSettings from "./pages/GroupSettings";
 import CallScreen from "./pages/CallScreen";
 import BrowserNotificationListener from "./components/BrowserNotificationListener";
 import IncomingCallOverlay from "./components/IncomingCallOverlay";
@@ -58,6 +60,8 @@ const App = () => (
             <Route path="/call/:callId" element={<Protected><CallScreen /></Protected>} />
             <Route path="/settings" element={<Protected><Settings /></Protected>} />
             <Route path="/requests" element={<Protected><Requests /></Protected>} />
+            <Route path="/community/:id" element={<Protected><Community /></Protected>} />
+            <Route path="/group/:id/settings" element={<Protected><GroupSettings /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </ActiveCallProvider>

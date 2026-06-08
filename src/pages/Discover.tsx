@@ -261,7 +261,8 @@ export default function Discover() {
                 return (
                   <div
                     key={c.id}
-                    className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl shadow-[var(--shadow-soft)] animate-fade-in"
+                    onClick={() => nav(`/community/${c.id}`)}
+                    className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl shadow-[var(--shadow-soft)] animate-fade-in cursor-pointer active:scale-[0.99] transition-transform"
                     style={{ animationDelay: `${i * 30}ms` }}
                   >
                     {c.avatar_url ? (
@@ -276,7 +277,7 @@ export default function Discover() {
                       <p className="text-xs text-muted-foreground truncate">{formatMembers(c.member_count)}</p>
                     </div>
                     <button
-                      onClick={() => toggleJoin(c)}
+                      onClick={(e) => { e.stopPropagation(); toggleJoin(c); }}
                       className="px-3.5 h-8 rounded-full text-xs font-semibold transition-all active:scale-95"
                       style={{
                         background: joined ? "hsl(var(--muted))" : "var(--gradient-cta)",
