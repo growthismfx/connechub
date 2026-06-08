@@ -188,6 +188,41 @@ export type Database = {
         }
         Relationships: []
       }
+      community_posts: {
+        Row: {
+          author_id: string
+          community_id: string
+          content: string | null
+          created_at: string
+          id: string
+          media_url: string | null
+        }
+        Insert: {
+          author_id: string
+          community_id: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+        }
+        Update: {
+          author_id?: string
+          community_id?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_participants: {
         Row: {
           connected_via: string
