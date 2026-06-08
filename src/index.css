@@ -40,16 +40,18 @@
     --bubble-them: 240 10% 96%;
     --online: 142 70% 45%;
 
-    /* Gradients */
-    --gradient-bubble: linear-gradient(135deg, hsl(258 90% 70%), hsl(270 90% 65%));
-    --gradient-cta: linear-gradient(135deg, hsl(258 90% 66%), hsl(270 85% 60%));
-    --gradient-card: linear-gradient(135deg, hsl(258 100% 97%), hsl(270 100% 97%));
-    --gradient-page: linear-gradient(180deg, hsl(0 0% 100%), hsl(258 40% 99%));
+    /* Live gradients */
+    --gradient-bubble: linear-gradient(135deg, hsl(258 95% 72%), hsl(285 90% 68%), hsl(310 85% 70%));
+    --gradient-cta: linear-gradient(135deg, hsl(258 95% 66%), hsl(280 90% 62%), hsl(310 85% 65%));
+    --gradient-card: linear-gradient(135deg, hsl(258 100% 97%), hsl(285 100% 97%), hsl(310 100% 98%));
+    --gradient-page: linear-gradient(180deg, hsl(280 60% 99%) 0%, hsl(258 70% 98%) 40%, hsl(220 80% 99%) 100%);
+    --gradient-mesh: radial-gradient(circle at 20% 10%, hsl(258 90% 92% / 0.7), transparent 40%), radial-gradient(circle at 85% 20%, hsl(310 85% 92% / 0.6), transparent 45%), radial-gradient(circle at 50% 90%, hsl(220 90% 95% / 0.7), transparent 50%);
 
     /* Shadows */
-    --shadow-soft: 0 8px 24px -8px hsl(258 40% 60% / 0.18);
-    --shadow-pill: 0 6px 20px -6px hsl(258 40% 50% / 0.15);
-    --shadow-bubble: 0 8px 20px -6px hsl(258 80% 60% / 0.35);
+    --shadow-soft: 0 8px 28px -10px hsl(258 50% 50% / 0.22);
+    --shadow-pill: 0 12px 32px -10px hsl(258 50% 45% / 0.22);
+    --shadow-bubble: 0 12px 28px -8px hsl(280 80% 60% / 0.4);
+
   }
 
   /* iOS theme — clean blue/grey, tighter radii, flat nav */
