@@ -277,7 +277,7 @@ export default function Discover() {
                       <p className="text-xs text-muted-foreground truncate">{formatMembers(c.member_count)}</p>
                     </div>
                     <button
-                      onClick={() => toggleJoin(c)}
+                      onClick={(e) => { e.stopPropagation(); toggleJoin(c); }}
                       className="px-3.5 h-8 rounded-full text-xs font-semibold transition-all active:scale-95"
                       style={{
                         background: joined ? "hsl(var(--muted))" : "var(--gradient-cta)",
