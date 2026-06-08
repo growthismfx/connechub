@@ -15,6 +15,8 @@ import Status from "./pages/Status";
 import Calls from "./pages/Calls";
 import Settings from "./pages/Settings";
 import Requests from "./pages/Requests";
+import Community from "./pages/Community";
+import GroupSettings from "./pages/GroupSettings";
 import CallScreen from "./pages/CallScreen";
 import BrowserNotificationListener from "./components/BrowserNotificationListener";
 import IncomingCallOverlay from "./components/IncomingCallOverlay";
