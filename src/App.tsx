@@ -60,6 +60,8 @@ const App = () => (
             <Route path="/call/:callId" element={<Protected><CallScreen /></Protected>} />
             <Route path="/settings" element={<Protected><Settings /></Protected>} />
             <Route path="/requests" element={<Protected><Requests /></Protected>} />
+            <Route path="/community/:id" element={<Protected><Community /></Protected>} />
+            <Route path="/group/:id/settings" element={<Protected><GroupSettings /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </ActiveCallProvider>
