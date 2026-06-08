@@ -261,7 +261,8 @@ export default function Discover() {
                 return (
                   <div
                     key={c.id}
-                    className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl shadow-[var(--shadow-soft)] animate-fade-in"
+                    onClick={() => nav(`/community/${c.id}`)}
+                    className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl shadow-[var(--shadow-soft)] animate-fade-in cursor-pointer active:scale-[0.99] transition-transform"
                     style={{ animationDelay: `${i * 30}ms` }}
                   >
                     {c.avatar_url ? (
