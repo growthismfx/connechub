@@ -222,20 +222,34 @@
   }
 }
 
-/* Liquid nav indicator */
-@keyframes liquid-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+/* Water-drop navigation indicator (morphing blob) */
+@keyframes waterdrop-squish {
+  0%, 100% { border-radius: 9999px; transform: scaleY(1) scaleX(1); }
+  40% { border-radius: 60% 60% 50% 50% / 70% 70% 40% 40%; transform: scaleY(1.15) scaleX(0.9); }
+  70% { border-radius: 50% 50% 60% 60% / 40% 40% 70% 70%; transform: scaleY(0.9) scaleX(1.1); }
 }
-.nav-liquid {
+.nav-waterdrop {
   position: absolute;
-  inset: 4px auto 4px 0;
+  top: 6px;
+  bottom: 6px;
   background: var(--gradient-cta);
-  border-radius: var(--nav-radius);
-  transition: left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 16px -4px hsl(var(--primary) / 0.4);
-  animation: liquid-pulse 3s ease-in-out infinite;
+  background-size: 200% 200%;
+  border-radius: 9999px;
+  box-shadow: 0 6px 20px -4px hsl(var(--primary) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.3);
+  transition: left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: gradient-shift 5s ease infinite;
+  z-index: 0;
 }
+.nav-waterdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: waterdrop-squish 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-fill-mode: both;
+  background: inherit;
+}
+
 
 /* Status story progress bars */
 @keyframes story-progress {
