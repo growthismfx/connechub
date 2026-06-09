@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Palette, Camera, Languages, Settings as SettingsIcon } from "lucide-react";
+import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Palette, Camera, Languages, Settings as SettingsIcon, Shield, UserCog } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
@@ -158,7 +158,7 @@ export default function Settings() {
     <div className="min-h-screen pb-32 px-5 pt-12">
       <div className="flex items-center justify-between mb-2 animate-fade-in">
         <h1 className="text-[26px] font-bold tracking-tight">Profile</h1>
-        <button onClick={() => setEditOpen(true)} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+        <button onClick={() => nav("/settings/profile")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
           <Edit3 className="w-4 h-4" />
         </button>
       </div>
@@ -181,6 +181,16 @@ export default function Settings() {
       </div>
 
       <div className="bg-white rounded-3xl shadow-[var(--shadow-soft)] divide-y divide-border/50 overflow-hidden mb-6 animate-fade-in">
+        <button onClick={() => nav("/settings/profile")} className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors">
+          <UserCog className="w-[18px] h-[18px] text-muted-foreground" />
+          <span className="flex-1 text-[15px] font-medium">Edit profile</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+        <button onClick={() => nav("/settings/security")} className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors">
+          <Shield className="w-[18px] h-[18px] text-muted-foreground" />
+          <span className="flex-1 text-[15px] font-medium">Security & devices</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
         <NavRow icon={User} label="Account" k="account" />
         <Panel k="account">
           <div className="flex items-center justify-between py-2">
