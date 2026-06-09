@@ -24,6 +24,8 @@ import PushBootstrap from "./components/PushBootstrap";
 import { ActiveCallProvider } from "./contexts/ActiveCallContext";
 import MiniCallWidget from "./components/MiniCallWidget";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import SecuritySettings from "./pages/SecuritySettings";
+import EditProfile from "./pages/EditProfile";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,8 @@ const App = () => (
             <Route path="/requests" element={<Protected><Requests /></Protected>} />
             <Route path="/community/:id" element={<Protected><Community /></Protected>} />
             <Route path="/group/:id/settings" element={<Protected><GroupSettings /></Protected>} />
+            <Route path="/settings/security" element={<Protected><SecuritySettings /></Protected>} />
+            <Route path="/settings/profile" element={<Protected><EditProfile /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </ActiveCallProvider>
