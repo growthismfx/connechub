@@ -45,7 +45,7 @@ export default function EditProfile() {
       if (error) throw error;
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const col = kind === "avatar" ? "avatar_url" : "banner_url";
-      await supabase.from("profiles").update({ [col]: data.publicUrl }).eq("id", user.id);
+      await supabase.from("profiles").update({ [col]: data.publicUrl } as any).eq("id", user.id);
       await refreshProfile();
       toast.success(`${kind === "avatar" ? "Photo" : "Banner"} updated`);
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
