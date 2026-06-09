@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Plus, Pin, BellOff } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
+import NotesStrip from "@/components/NotesStrip";
 import BottomNav from "@/components/BottomNav";
 import { formatDistanceToNow } from "date-fns";
 
@@ -150,6 +151,9 @@ export default function Chats() {
           />
         </div>
       </div>
+
+      {/* Notes */}
+      <NotesStrip />
 
       {/* Stories */}
       <div className="px-5 mb-3 overflow-x-auto no-scrollbar">

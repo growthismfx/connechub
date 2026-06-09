@@ -110,6 +110,63 @@ export type Database = {
           },
         ]
       }
+      chat_folder_items: {
+        Row: {
+          conversation_id: string
+          folder_id: string
+        }
+        Insert: {
+          conversation_id: string
+          folder_id: string
+        }
+        Update: {
+          conversation_id?: string
+          folder_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_folder_items_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_folder_items_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "chat_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_folders: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_locks: {
         Row: {
           conversation_id: string
@@ -127,6 +184,24 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           pin_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      close_friends: {
+        Row: {
+          created_at: string
+          friend_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
           user_id?: string
         }
         Relationships: []
@@ -324,22 +399,129 @@ export type Database = {
         }
         Relationships: []
       }
+      login_alerts: {
+        Row: {
+          created_at: string
+          device: string | null
+          event: string
+          id: string
+          ip: string | null
+          meta: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device?: string | null
+          event: string
+          id?: string
+          ip?: string | null
+          meta?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device?: string | null
+          event?: string
+          id?: string
+          ip?: string | null
+          meta?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      message_pins: {
+        Row: {
+          conversation_id: string
+          message_id: string
+          pinned_at: string
+          pinned_by: string
+        }
+        Insert: {
+          conversation_id: string
+          message_id: string
+          pinned_at?: string
+          pinned_by: string
+        }
+        Update: {
+          conversation_id?: string
+          message_id?: string
+          pinned_at?: string
+          pinned_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_pins_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_pins_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           call_id: string | null
           content: string | null
           conversation_id: string
           created_at: string | null
+          deleted_for_everyone: boolean
           delivered_at: string | null
+          edit_history: Json | null
+          edited_at: string | null
           encrypted_keys: Json | null
+          expires_at: string | null
+          forwarded_from_id: string | null
           id: string
           is_encrypted: boolean
+          is_silent: boolean
           iv: string | null
           media_url: string | null
           message_type: string | null
           read_at: string | null
           reply_to: string | null
+          scheduled_for: string | null
+          self_destruct_seconds: number | null
           sender_id: string
+          sent: boolean
           status: string | null
         }
         Insert: {
@@ -347,16 +529,25 @@ export type Database = {
           content?: string | null
           conversation_id: string
           created_at?: string | null
+          deleted_for_everyone?: boolean
           delivered_at?: string | null
+          edit_history?: Json | null
+          edited_at?: string | null
           encrypted_keys?: Json | null
+          expires_at?: string | null
+          forwarded_from_id?: string | null
           id?: string
           is_encrypted?: boolean
+          is_silent?: boolean
           iv?: string | null
           media_url?: string | null
           message_type?: string | null
           read_at?: string | null
           reply_to?: string | null
+          scheduled_for?: string | null
+          self_destruct_seconds?: number | null
           sender_id: string
+          sent?: boolean
           status?: string | null
         }
         Update: {
@@ -364,16 +555,25 @@ export type Database = {
           content?: string | null
           conversation_id?: string
           created_at?: string | null
+          deleted_for_everyone?: boolean
           delivered_at?: string | null
+          edit_history?: Json | null
+          edited_at?: string | null
           encrypted_keys?: Json | null
+          expires_at?: string | null
+          forwarded_from_id?: string | null
           id?: string
           is_encrypted?: boolean
+          is_silent?: boolean
           iv?: string | null
           media_url?: string | null
           message_type?: string | null
           read_at?: string | null
           reply_to?: string | null
+          scheduled_for?: string | null
+          self_destruct_seconds?: number | null
           sender_id?: string
+          sent?: boolean
           status?: string | null
         }
         Relationships: [
@@ -393,60 +593,173 @@ export type Database = {
           },
         ]
       }
+      note_reactions: {
+        Row: {
+          body: string | null
+          created_at: string
+          emoji: string
+          id: string
+          note_id: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          emoji: string
+          id?: string
+          note_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          emoji?: string
+          id?: string
+          note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_reactions_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          audience: string
+          body: string | null
+          created_at: string
+          emoji: string | null
+          expires_at: string
+          id: string
+          mentions: string[] | null
+          music_title: string | null
+          music_url: string | null
+          user_id: string
+        }
+        Insert: {
+          audience?: string
+          body?: string | null
+          created_at?: string
+          emoji?: string | null
+          expires_at?: string
+          id?: string
+          mentions?: string[] | null
+          music_title?: string | null
+          music_url?: string | null
+          user_id: string
+        }
+        Update: {
+          audience?: string
+          body?: string | null
+          created_at?: string
+          emoji?: string | null
+          expires_at?: string
+          id?: string
+          mentions?: string[] | null
+          music_title?: string | null
+          music_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          achievements: Json | null
           assigned_number: string | null
           avatar_url: string | null
+          badges: string[] | null
+          banner_url: string | null
+          bio: string | null
           country_code: string | null
           created_at: string | null
           id: string
           is_online: boolean | null
           last_seen: string | null
+          links: Json | null
+          location: string | null
           name: string | null
+          profile_music_title: string | null
+          profile_music_url: string | null
+          profile_theme: string | null
+          pronouns: string | null
           public_key: string | null
           read_receipts: boolean
           show_last_seen: boolean
           show_profile_photo: boolean
           show_status: boolean
+          social_links: Json | null
           status: string | null
           updated_at: string | null
           username: string | null
+          wallpaper_url: string | null
+          website: string | null
         }
         Insert: {
+          achievements?: Json | null
           assigned_number?: string | null
           avatar_url?: string | null
+          badges?: string[] | null
+          banner_url?: string | null
+          bio?: string | null
           country_code?: string | null
           created_at?: string | null
           id: string
           is_online?: boolean | null
           last_seen?: string | null
+          links?: Json | null
+          location?: string | null
           name?: string | null
+          profile_music_title?: string | null
+          profile_music_url?: string | null
+          profile_theme?: string | null
+          pronouns?: string | null
           public_key?: string | null
           read_receipts?: boolean
           show_last_seen?: boolean
           show_profile_photo?: boolean
           show_status?: boolean
+          social_links?: Json | null
           status?: string | null
           updated_at?: string | null
           username?: string | null
+          wallpaper_url?: string | null
+          website?: string | null
         }
         Update: {
+          achievements?: Json | null
           assigned_number?: string | null
           avatar_url?: string | null
+          badges?: string[] | null
+          banner_url?: string | null
+          bio?: string | null
           country_code?: string | null
           created_at?: string | null
           id?: string
           is_online?: boolean | null
           last_seen?: string | null
+          links?: Json | null
+          location?: string | null
           name?: string | null
+          profile_music_title?: string | null
+          profile_music_url?: string | null
+          profile_theme?: string | null
+          pronouns?: string | null
           public_key?: string | null
           read_receipts?: boolean
           show_last_seen?: boolean
           show_profile_photo?: boolean
           show_status?: boolean
+          social_links?: Json | null
           status?: string | null
           updated_at?: string | null
           username?: string | null
+          wallpaper_url?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -536,33 +849,114 @@ export type Database = {
       }
       statuses: {
         Row: {
+          allow_reactions: boolean
+          allow_replies: boolean
+          allow_sharing: boolean
+          allowed_user_ids: string[] | null
           background: string | null
+          blocked_user_ids: string[] | null
           content: string | null
+          countdown_end: string | null
+          countdown_title: string | null
           created_at: string
           expires_at: string
+          hashtags: string[] | null
+          highlight_id: string | null
           id: string
+          is_highlight: boolean
+          layers: Json | null
+          link_title: string | null
+          link_url: string | null
+          location: Json | null
           media_type: string | null
           media_url: string | null
+          mentions: string[] | null
+          music_artist: string | null
+          music_thumbnail: string | null
+          music_title: string | null
+          music_url: string | null
+          poll_options: Json | null
+          poll_question: string | null
+          privacy: string
+          question_prompt: string | null
+          quiz_correct_index: number | null
+          quiz_options: Json | null
+          repost_of: string | null
+          story_type: string
           user_id: string
         }
         Insert: {
+          allow_reactions?: boolean
+          allow_replies?: boolean
+          allow_sharing?: boolean
+          allowed_user_ids?: string[] | null
           background?: string | null
+          blocked_user_ids?: string[] | null
           content?: string | null
+          countdown_end?: string | null
+          countdown_title?: string | null
           created_at?: string
           expires_at?: string
+          hashtags?: string[] | null
+          highlight_id?: string | null
           id?: string
+          is_highlight?: boolean
+          layers?: Json | null
+          link_title?: string | null
+          link_url?: string | null
+          location?: Json | null
           media_type?: string | null
           media_url?: string | null
+          mentions?: string[] | null
+          music_artist?: string | null
+          music_thumbnail?: string | null
+          music_title?: string | null
+          music_url?: string | null
+          poll_options?: Json | null
+          poll_question?: string | null
+          privacy?: string
+          question_prompt?: string | null
+          quiz_correct_index?: number | null
+          quiz_options?: Json | null
+          repost_of?: string | null
+          story_type?: string
           user_id: string
         }
         Update: {
+          allow_reactions?: boolean
+          allow_replies?: boolean
+          allow_sharing?: boolean
+          allowed_user_ids?: string[] | null
           background?: string | null
+          blocked_user_ids?: string[] | null
           content?: string | null
+          countdown_end?: string | null
+          countdown_title?: string | null
           created_at?: string
           expires_at?: string
+          hashtags?: string[] | null
+          highlight_id?: string | null
           id?: string
+          is_highlight?: boolean
+          layers?: Json | null
+          link_title?: string | null
+          link_url?: string | null
+          location?: Json | null
           media_type?: string | null
           media_url?: string | null
+          mentions?: string[] | null
+          music_artist?: string | null
+          music_thumbnail?: string | null
+          music_title?: string | null
+          music_url?: string | null
+          poll_options?: Json | null
+          poll_question?: string | null
+          privacy?: string
+          question_prompt?: string | null
+          quiz_correct_index?: number | null
+          quiz_options?: Json | null
+          repost_of?: string | null
+          story_type?: string
           user_id?: string
         }
         Relationships: [
@@ -575,12 +969,229 @@ export type Database = {
           },
         ]
       }
+      story_highlights: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      story_poll_votes: {
+        Row: {
+          choice_index: number
+          created_at: string
+          status_id: string
+          user_id: string
+        }
+        Insert: {
+          choice_index: number
+          created_at?: string
+          status_id: string
+          user_id: string
+        }
+        Update: {
+          choice_index?: number
+          created_at?: string
+          status_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_poll_votes_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "statuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          status_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          status_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          status_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_reactions_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "statuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_replies: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          status_id: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          status_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          status_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_replies_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "statuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_devices: {
+        Row: {
+          created_at: string
+          device_name: string | null
+          id: string
+          ip: string | null
+          last_active: string
+          platform: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          ip?: string | null
+          last_active?: string
+          platform?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          ip?: string | null
+          last_active?: string
+          platform?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_security: {
+        Row: {
+          biometric_credentials: Json | null
+          login_alerts_enabled: boolean
+          passcode_enabled: boolean
+          passcode_hash: string | null
+          recovery_codes: string[] | null
+          totp_enabled: boolean
+          totp_secret: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          biometric_credentials?: Json | null
+          login_alerts_enabled?: boolean
+          passcode_enabled?: boolean
+          passcode_hash?: string | null
+          recovery_codes?: string[] | null
+          totp_enabled?: boolean
+          totp_secret?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          biometric_credentials?: Json | null
+          login_alerts_enabled?: boolean
+          passcode_enabled?: boolean
+          passcode_hash?: string | null
+          recovery_codes?: string[] | null
+          totp_enabled?: boolean
+          totp_secret?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_themes: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          name: string
+          tokens: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name: string
+          tokens: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          tokens?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       are_blocked: { Args: { _a: string; _b: string }; Returns: boolean }
+      can_view_story: {
+        Args: { _status: Database["public"]["Tables"]["statuses"]["Row"] }
+        Returns: boolean
+      }
       find_or_create_dm: { Args: { _a: string; _b: string }; Returns: string }
       get_status_views: {
         Args: { _status_id: string }
