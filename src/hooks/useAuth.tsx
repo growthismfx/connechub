@@ -11,7 +11,12 @@ type Profile = {
   country_code: string | null;
   avatar_url: string | null;
   status: string | null;
+  read_receipts?: boolean;
+  show_last_seen?: boolean;
+  show_profile_photo?: boolean;
+  show_status?: boolean;
 };
+
 
 type Ctx = {
   user: User | null;
