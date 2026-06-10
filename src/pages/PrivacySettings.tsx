@@ -37,12 +37,13 @@ export default function PrivacySettings() {
 
   useEffect(() => { loadBlocked(); }, [user?.id]);
 
-  const update = async (patch: Record<string, any>) => {
+  const update = async (patch: any) => {
     if (!user) return;
     const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
     if (error) return toast.error(error.message);
     await refreshProfile();
   };
+
 
   const unblock = async (id: string) => {
     if (!user) return;
