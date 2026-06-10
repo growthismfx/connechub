@@ -104,10 +104,11 @@ export default function StatusSettings() {
           {stories.map((s) => (
             <div key={s.id} className="flex items-center gap-3 py-2 border-t">
               <div className="w-12 h-12 rounded-xl bg-muted overflow-hidden flex items-center justify-center text-xs">
-                {s.media_url ? <img src={s.media_url} className="w-full h-full object-cover" /> : (s.content_type || "text")}
+                {s.media_url ? <img src={s.media_url} className="w-full h-full object-cover" /> : (s.story_type || "text")}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium capitalize truncate">{s.content_type || "story"} · {s.privacy}</p>
+                <p className="text-sm font-medium capitalize truncate">{s.story_type || "story"} · {s.privacy}</p>
+
                 <p className="text-[11px] text-muted-foreground">Expires {formatDistanceToNow(new Date(s.expires_at), { addSuffix: true })}</p>
               </div>
               <button onClick={() => deleteOne(s.id)} className="w-9 h-9 rounded-full bg-destructive/10 text-destructive flex items-center justify-center"><Trash2 className="w-4 h-4" /></button>
