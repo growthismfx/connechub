@@ -26,6 +26,10 @@ import MiniCallWidget from "./components/MiniCallWidget";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import SecuritySettings from "./pages/SecuritySettings";
 import EditProfile from "./pages/EditProfile";
+import PrivacySettings from "./pages/PrivacySettings";
+import NotesSettings from "./pages/NotesSettings";
+import StatusSettings from "./pages/StatusSettings";
+
 
 const queryClient = new QueryClient();
 
