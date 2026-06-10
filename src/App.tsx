@@ -26,6 +26,10 @@ import MiniCallWidget from "./components/MiniCallWidget";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import SecuritySettings from "./pages/SecuritySettings";
 import EditProfile from "./pages/EditProfile";
+import PrivacySettings from "./pages/PrivacySettings";
+import NotesSettings from "./pages/NotesSettings";
+import StatusSettings from "./pages/StatusSettings";
+
 
 const queryClient = new QueryClient();
 
@@ -66,7 +70,11 @@ const App = () => (
             <Route path="/group/:id/settings" element={<Protected><GroupSettings /></Protected>} />
             <Route path="/settings/security" element={<Protected><SecuritySettings /></Protected>} />
             <Route path="/settings/profile" element={<Protected><EditProfile /></Protected>} />
+            <Route path="/settings/privacy" element={<Protected><PrivacySettings /></Protected>} />
+            <Route path="/settings/notes" element={<Protected><NotesSettings /></Protected>} />
+            <Route path="/settings/status" element={<Protected><StatusSettings /></Protected>} />
             <Route path="*" element={<NotFound />} />
+
           </Routes>
           </ActiveCallProvider>
         </AuthProvider>

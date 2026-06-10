@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Palette, Camera, Languages, Settings as SettingsIcon, Shield, UserCog } from "lucide-react";
+import { ChevronRight, User, Bell, Lock, HelpCircle, LogOut, Copy, Edit3, Palette, Camera, Languages, Settings as SettingsIcon, Shield, UserCog, StickyNote, Circle } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
@@ -206,11 +206,22 @@ export default function Settings() {
           </div>
         </Panel>
 
-        <NavRow icon={Lock} label="Privacy" k="privacy" />
-        <Panel k="privacy">
-          <Toggle label="Read receipts" sub="Show when you've read messages" checked={readReceipts} onChange={setReadReceipts} />
-          <Toggle label="Online status" sub="Show when you're online" checked={showOnline} onChange={setShowOnline} />
-        </Panel>
+        <button onClick={() => nav("/settings/privacy")} className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors">
+          <Lock className="w-[18px] h-[18px] text-muted-foreground" />
+          <span className="flex-1 text-[15px] font-medium">Privacy</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+        <button onClick={() => nav("/settings/notes")} className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors">
+          <StickyNote className="w-[18px] h-[18px] text-muted-foreground" />
+          <span className="flex-1 text-[15px] font-medium">Notes</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+        <button onClick={() => nav("/settings/status")} className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors">
+          <Circle className="w-[18px] h-[18px] text-muted-foreground" />
+          <span className="flex-1 text-[15px] font-medium">Status</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+
 
         <NavRow icon={Bell} label="Notifications" k="notif" />
         <Panel k="notif">

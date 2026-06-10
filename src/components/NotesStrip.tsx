@@ -73,9 +73,13 @@ export default function NotesStrip() {
     setReply(""); setReplyOpen(null); toast.success("Reply sent");
   };
 
+  const notesEnabled = typeof window !== "undefined" ? localStorage.getItem("hellow_notes_enabled") !== "0" : true;
+  if (!notesEnabled) return null;
+
   return (
-    <div className="px-5 mb-3">
-      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+
+    <div className="px-5 pt-5 mb-3">
+      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 pt-3">
         {/* My note bubble */}
         <button onClick={() => myNote ? deleteMine() : setOpen(true)} className="flex flex-col items-center gap-1 shrink-0 relative">
           <div className="relative">
