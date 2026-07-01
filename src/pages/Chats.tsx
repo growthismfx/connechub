@@ -9,8 +9,8 @@ import NotesStrip from "@/components/NotesStrip";
 import BottomNav from "@/components/BottomNav";
 import { formatDistanceToNow } from "date-fns";
 
-const TABS = ["All", "Unread", "Groups", "Channels"] as const;
-type Tab = typeof TABS[number];
+const BASE_TABS = ["All", "Unread", "Groups", "Channels"] as const;
+type Tab = string;
 
 export default function Chats() {
   const { user, profile } = useAuth();
