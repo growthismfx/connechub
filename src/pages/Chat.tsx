@@ -388,19 +388,50 @@ export default function Chat() {
         )}
       </div>
 
+      {/* Pinned banner */}
+      {pinnedIds.size > 0 && (() => {
+        const pm = messages.find((x) => pinnedIds.has(x.id));
+        if (!pm) return null;
+        return (
+          <div className="mx-5 mb-1 flex items-center gap-2 bg-white/80 backdrop-blur rounded-2xl px-3 py-2 shadow-[var(--shadow-pill)] border border-border/40">
+            <PinIcon className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
+            <p className="text-xs truncate flex-1"><span className="font-semibold">Pinned · </span>{pm.deleted_for_everyone ? "deleted message" : (pm.content || pm.message_type)}</p>
+          </div>
+        );
+      })()}
+
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3 pb-28">
         {messages.map((m) => {
           const me = m.sender_id === user?.id;
+          const reacts = reactions[m.id] || [];
+          const replyMsg = m.reply_to ? messages.find((x) => x.id === m.reply_to) : null;
+          const deleted = m.deleted_for_everyone;
           return (
             <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
               <div className="max-w-[75%] relative">
-                <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
-                  {isGroup && !me && (
+                <div
+                  onContextMenu={(e) => { e.preventDefault(); openActions(m); }}
+                  onTouchStart={() => startLongPress(m)}
+                  onTouchEnd={cancelLongPress}
+                  onTouchMove={cancelLongPress}
+                  onTouchCancel={cancelLongPress}
+                  onDoubleClick={() => openActions(m)}
+                  className={`px-4 py-3 rounded-3xl select-none ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"} ${deleted ? "italic opacity-70" : ""}`}
+                >
+                  {isGroup && !me && !deleted && (
                     <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--primary))" }}>
                       {senderMap[m.sender_id]?.name || "Member"}
                     </p>
                   )}
-                  {m.message_type === "call" ? (
+                  {replyMsg && !deleted && (
+                    <div className="mb-2 pl-2 border-l-2 rounded-md bg-black/5 px-2 py-1" style={{ borderColor: "hsl(var(--primary))" }}>
+                      <p className="text-[10px] font-semibold opacity-80">{senderMap[replyMsg.sender_id]?.name || (replyMsg.sender_id === user?.id ? "You" : "Reply")}</p>
+                      <p className="text-[11px] truncate opacity-80">{replyMsg.deleted_for_everyone ? "deleted message" : (replyMsg.content || replyMsg.message_type)}</p>
+                    </div>
+                  )}
+                  {deleted ? (
+                    <p className="text-sm">🚫 This message was deleted</p>
+                  ) : m.message_type === "call" ? (
                     <p className="text-sm flex items-center gap-2">
                       {(m.content || "").toLowerCase().includes("missed") ? (
                         <PhoneMissed className="w-4 h-4 text-destructive" />
@@ -420,25 +451,42 @@ export default function Chat() {
                   ) : m.message_type === "file" && m.media_url ? (
                     <a href={m.media_url} target="_blank" rel="noreferrer" className="underline">{m.content}</a>
                   ) : (
-                    <p className="text-sm leading-relaxed">{m.content}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{m.content}</p>
                   )}
                 </div>
+                {reacts.length > 0 && (
+                  <div className={`flex flex-wrap gap-1 mt-1 ${me ? "justify-end" : "justify-start"}`}>
+                    {reacts.map((r) => (
+                      <button
+                        key={r.emoji}
+                        onClick={() => { setActionTarget({ id: m.id, content: m.content || "", sender_id: m.sender_id, message_type: m.message_type, isMine: me }); }}
+                        className={`text-[11px] leading-none px-2 py-0.5 rounded-full border ${r.mine ? "bg-primary/10 border-primary/40" : "bg-white border-border/50"} shadow-sm`}
+                      >
+                        <span className="mr-0.5">{r.emoji}</span>
+                        <span className="text-muted-foreground">{r.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <p className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
+                  {pinnedIds.has(m.id) && <PinIcon className="w-3 h-3" />}
                   {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-500" />}
+                  {m.edited_at && !deleted && <span className="italic">edited</span>}
                   <span>{format(new Date(m.created_at), "HH:mm")}</span>
                   {me && renderTicks(m)}
                 </p>
                 <button
-                  onClick={() => toggleStar(m.id)}
+                  onClick={() => openActions(m)}
                   className={`absolute -top-2 ${me ? "-left-7" : "-right-7"} w-6 h-6 rounded-full bg-white shadow-[var(--shadow-pill)] items-center justify-center hidden group-hover:flex`}
-                  aria-label="Star message"
+                  aria-label="Message actions"
                 >
-                  <Star className={`w-3 h-3 ${starred.has(m.id) ? "fill-current text-yellow-500" : "text-muted-foreground"}`} />
+                  <span className="text-[10px]">⋯</span>
                 </button>
               </div>
             </div>
           );
         })}
+
 
         {otherTyping && (
           <div className="flex justify-start animate-fade-in">
