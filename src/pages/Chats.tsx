@@ -18,6 +18,8 @@ export default function Chats() {
   const [stories, setStories] = useState<any[]>([]);
   const [tab, setTab] = useState<Tab>("All");
   const [q, setQ] = useState("");
+  const [folders, setFolders] = useState<{ id: string; name: string; icon?: string | null }[]>([]);
+  const [folderItems, setFolderItems] = useState<Record<string, Set<string>>>({});
   const nav = useNavigate();
 
   const load = async () => {
