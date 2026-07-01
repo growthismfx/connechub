@@ -500,6 +500,20 @@ export default function Chat() {
       </div>
 
       <div className="fixed bottom-4 left-0 right-0 px-5">
+        {(replyTo || editing) && (
+          <div className="mb-2 flex items-center gap-2 bg-white rounded-2xl px-3 py-2 shadow-[var(--shadow-pill)] border border-border/40 animate-fade-in">
+            <div className="w-1 h-8 rounded-full" style={{ background: "var(--gradient-cta)" }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--primary))" }}>
+                {editing ? "Editing message" : `Replying to ${senderMap[replyTo?.sender_id]?.name || (replyTo?.sender_id === user?.id ? "yourself" : other?.name || "message")}`}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">{(editing || replyTo)?.content}</p>
+            </div>
+            <button onClick={() => { setReplyTo(null); if (editing) { setEditing(null); setText(""); } }} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 bg-white rounded-full pl-4 pr-2 h-14 shadow-[var(--shadow-pill)]">
             <button onClick={() => fileRef.current?.click()}>
@@ -509,7 +523,7 @@ export default function Chat() {
               value={text}
               onChange={(e) => onTextChange(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Type your message..."
+              placeholder={editing ? "Edit your message…" : "Type your message..."}
               className="flex-1 bg-transparent outline-none text-sm"
             />
             <button><Mic className="w-5 h-5 text-muted-foreground" /></button>
@@ -521,6 +535,19 @@ export default function Chat() {
         <input ref={fileRef} type="file" accept="image/*,video/*,audio/*,application/*" hidden onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
       </div>
       <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} other={other} conversationId={id} onCall={(t) => { setProfileOpen(false); startCall(t); }} />
+      <MessageActionSheet
+        open={!!actionTarget}
+        target={actionTarget}
+        userId={user?.id}
+        isStarred={actionTarget ? starred.has(actionTarget.id) : false}
+        isPinned={actionTarget ? pinnedIds.has(actionTarget.id) : false}
+        onClose={() => setActionTarget(null)}
+        onReply={(m) => { const full = messages.find((x) => x.id === m.id); setReplyTo(full || m); setEditing(null); }}
+        onEdit={(m) => { const full = messages.find((x) => x.id === m.id); setEditing(full || m); setReplyTo(null); setText((full || m).content || ""); }}
+        onPinned={() => { loadPins(); }}
+        onDeleted={() => {}}
+        onStarToggle={() => { if (actionTarget) toggleStar(actionTarget.id); }}
+      />
     </div>
   );
 }
