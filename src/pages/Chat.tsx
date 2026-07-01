@@ -159,6 +159,48 @@ export default function Chat() {
           }
         })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
+        async (p) => {
+          const raw: any = p.new;
+          const m = await decryptIfNeeded(raw);
+          setMessages((prev) => prev.map((x) => x.id === m.id ? { ...x, ...m } : x));
+        })
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, () => loadReactions())
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_pins", filter: `conversation_id=eq.${id}` }, () => loadPins())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [id, user]);
+
+  const loadReactions = async () => {
+    if (!id || !user) return;
+    const { data: msgs } = await supabase.from("messages").select("id").eq("conversation_id", id);
+    const ids = (msgs || []).map((m: any) => m.id);
+    if (!ids.length) return setReactions({});
+    const { data } = await supabase.from("message_reactions" as any).select("message_id, user_id, emoji").in("message_id", ids);
+    const grouped: Record<string, Record<string, { count: number; mine: boolean }>> = {};
+    (data || []).forEach((r: any) => {
+      grouped[r.message_id] = grouped[r.message_id] || {};
+      const cur = grouped[r.message_id][r.emoji] || { count: 0, mine: false };
+      cur.count += 1;
+      if (r.user_id === user.id) cur.mine = true;
+      grouped[r.message_id][r.emoji] = cur;
+    });
+    const out: Record<string, { emoji: string; count: number; mine: boolean }[]> = {};
+    Object.keys(grouped).forEach((mid) => {
+      out[mid] = Object.entries(grouped[mid]).map(([emoji, v]) => ({ emoji, ...v }));
+    });
+    setReactions(out);
+  };
+  const loadPins = async () => {
+    if (!id) return;
+    const { data } = await supabase.from("message_pins" as any).select("message_id").eq("conversation_id", id);
+    setPinnedIds(new Set((data || []).map((p: any) => p.message_id)));
+  };
+  useEffect(() => { loadReactions(); loadPins(); }, [id, user]);
+
+            await supabase.from("messages").update({ delivered_at: now, read_at: now, status: "read" }).eq("id", m.id);
+          }
+        })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
         (p) => setMessages((prev) => prev.map((m) => m.id === (p.new as any).id ? { ...m, ...(p.new as any), content: m.content } : m)))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
