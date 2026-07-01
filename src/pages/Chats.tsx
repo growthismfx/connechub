@@ -242,26 +242,35 @@ export default function Chats() {
 
       {/* Tabs */}
       <div className="px-5 mb-3 overflow-x-auto no-scrollbar">
-        <div className="flex gap-2">
-          {TABS.map((t) => {
-            const active = tab === t;
+        <div className="flex gap-2 items-center">
+          {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
+            const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
+            const active = tab === key;
             return (
               <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="px-4 h-8 rounded-full text-sm font-medium transition-all active:scale-95"
+                key={key}
+                onClick={() => setTab(key)}
+                className="px-4 h-8 rounded-full text-sm font-medium transition-all active:scale-95 whitespace-nowrap"
                 style={{
                   background: active ? "var(--gradient-cta)" : "hsl(var(--muted))",
                   color: active ? "white" : "hsl(var(--muted-foreground))",
                   boxShadow: active ? "var(--shadow-pill)" : "none",
                 }}
               >
-                {t}
+                {label}
               </button>
             );
           })}
+          <button
+            onClick={createFolder}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground border border-dashed border-border shrink-0 active:scale-95"
+            aria-label="Add folder"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
+
 
       {/* List */}
       <div className="px-5">
