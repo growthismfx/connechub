@@ -197,14 +197,8 @@ export default function Chat() {
   };
   useEffect(() => { loadReactions(); loadPins(); }, [id, user]);
 
-            await supabase.from("messages").update({ delivered_at: now, read_at: now, status: "read" }).eq("id", m.id);
-          }
-        })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
-        (p) => setMessages((prev) => prev.map((m) => m.id === (p.new as any).id ? { ...m, ...(p.new as any), content: m.content } : m)))
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [id, user]);
+
+
 
   // Typing presence channel (broadcast)
   useEffect(() => {
