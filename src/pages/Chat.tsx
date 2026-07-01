@@ -253,16 +253,58 @@ export default function Chat() {
     const content = text.trim();
     setText("");
     sendTyping(false);
-    // Try E2EE: encrypt for all conversation participants (including self for multi-device read).
+
+    // Editing an existing message (plaintext only; keeps E2EE for new sends)
+    if (editing) {
+      const history = Array.isArray(editing.edit_history) ? editing.edit_history : [];
+      history.push({ content: editing.content, at: new Date().toISOString() });
+      const { error } = await supabase.from("messages").update({
+        content,
+        is_encrypted: false,
+        iv: null,
+        encrypted_keys: null,
+        edited_at: new Date().toISOString(),
+        edit_history: history,
+      } as any).eq("id", editing.id);
+      if (error) toast.error(error.message);
+      setEditing(null);
+      setSending(false);
+      return;
+    }
+
+    // E2EE encrypt for all participants
     const recipients = participantIds.length ? participantIds : [user.id];
     const enc = await encryptForRecipients(content, recipients);
-    const payload = enc
+    const payload: any = enc
       ? { conversation_id: id, sender_id: user.id, content: enc.ciphertext, iv: enc.iv, encrypted_keys: enc.encrypted_keys, is_encrypted: true }
       : { conversation_id: id, sender_id: user.id, content };
-    const { error } = await supabase.from("messages").insert(payload as any);
+    if (replyTo?.id) payload.reply_to = replyTo.id;
+    const { error } = await supabase.from("messages").insert(payload);
     if (error) toast.error(error.message);
+    setReplyTo(null);
     setSending(false);
   };
+
+  const openActions = (m: any) => {
+    if (m.message_type === "call" || m.deleted_for_everyone) return;
+    setActionTarget({
+      id: m.id,
+      content: m.content || "",
+      sender_id: m.sender_id,
+      message_type: m.message_type,
+      deleted_for_everyone: m.deleted_for_everyone,
+      isMine: m.sender_id === user?.id,
+    });
+  };
+
+  const startLongPress = (m: any) => {
+    if (longPressRef.current) window.clearTimeout(longPressRef.current);
+    longPressRef.current = window.setTimeout(() => openActions(m), 450);
+  };
+  const cancelLongPress = () => {
+    if (longPressRef.current) { window.clearTimeout(longPressRef.current); longPressRef.current = null; }
+  };
+
 
   const uploadFile = async (file: File) => {
     if (!user || !id) return;
