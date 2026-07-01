@@ -35,6 +35,12 @@ export default function Chat() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
   const [participantIds, setParticipantIds] = useState<string[]>([]);
+  const [actionTarget, setActionTarget] = useState<MessageActionTarget | null>(null);
+  const [replyTo, setReplyTo] = useState<any | null>(null);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [reactions, setReactions] = useState<Record<string, { emoji: string; count: number; mine: boolean }[]>>({});
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  const longPressRef = useRef<number | null>(null);
 
   // Load my starred ids
   useEffect(() => {
