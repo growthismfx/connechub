@@ -9,6 +9,8 @@ import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import ProfileSheet from "@/components/ProfileSheet";
 import { encryptForRecipients, decryptMessage } from "@/lib/e2ee";
+import MessageActionSheet, { MessageActionTarget } from "@/components/MessageActionSheet";
+import { Pin as PinIcon, X } from "lucide-react";
 
 export default function Chat() {
   const { id } = useParams();
@@ -33,6 +35,12 @@ export default function Chat() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
   const [participantIds, setParticipantIds] = useState<string[]>([]);
+  const [actionTarget, setActionTarget] = useState<MessageActionTarget | null>(null);
+  const [replyTo, setReplyTo] = useState<any | null>(null);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [reactions, setReactions] = useState<Record<string, { emoji: string; count: number; mine: boolean }[]>>({});
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  const longPressRef = useRef<number | null>(null);
 
   // Load my starred ids
   useEffect(() => {
@@ -151,10 +159,46 @@ export default function Chat() {
           }
         })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
-        (p) => setMessages((prev) => prev.map((m) => m.id === (p.new as any).id ? { ...m, ...(p.new as any), content: m.content } : m)))
+        async (p) => {
+          const raw: any = p.new;
+          const m = await decryptIfNeeded(raw);
+          setMessages((prev) => prev.map((x) => x.id === m.id ? { ...x, ...m } : x));
+        })
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, () => loadReactions())
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_pins", filter: `conversation_id=eq.${id}` }, () => loadPins())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id, user]);
+
+  const loadReactions = async () => {
+    if (!id || !user) return;
+    const { data: msgs } = await supabase.from("messages").select("id").eq("conversation_id", id);
+    const ids = (msgs || []).map((m: any) => m.id);
+    if (!ids.length) return setReactions({});
+    const { data } = await supabase.from("message_reactions" as any).select("message_id, user_id, emoji").in("message_id", ids);
+    const grouped: Record<string, Record<string, { count: number; mine: boolean }>> = {};
+    (data || []).forEach((r: any) => {
+      grouped[r.message_id] = grouped[r.message_id] || {};
+      const cur = grouped[r.message_id][r.emoji] || { count: 0, mine: false };
+      cur.count += 1;
+      if (r.user_id === user.id) cur.mine = true;
+      grouped[r.message_id][r.emoji] = cur;
+    });
+    const out: Record<string, { emoji: string; count: number; mine: boolean }[]> = {};
+    Object.keys(grouped).forEach((mid) => {
+      out[mid] = Object.entries(grouped[mid]).map(([emoji, v]) => ({ emoji, ...v }));
+    });
+    setReactions(out);
+  };
+  const loadPins = async () => {
+    if (!id) return;
+    const { data } = await supabase.from("message_pins" as any).select("message_id").eq("conversation_id", id);
+    setPinnedIds(new Set((data || []).map((p: any) => p.message_id)));
+  };
+  useEffect(() => { loadReactions(); loadPins(); }, [id, user]);
+
+
+
 
   // Typing presence channel (broadcast)
   useEffect(() => {
@@ -209,16 +253,58 @@ export default function Chat() {
     const content = text.trim();
     setText("");
     sendTyping(false);
-    // Try E2EE: encrypt for all conversation participants (including self for multi-device read).
+
+    // Editing an existing message (plaintext only; keeps E2EE for new sends)
+    if (editing) {
+      const history = Array.isArray(editing.edit_history) ? editing.edit_history : [];
+      history.push({ content: editing.content, at: new Date().toISOString() });
+      const { error } = await supabase.from("messages").update({
+        content,
+        is_encrypted: false,
+        iv: null,
+        encrypted_keys: null,
+        edited_at: new Date().toISOString(),
+        edit_history: history,
+      } as any).eq("id", editing.id);
+      if (error) toast.error(error.message);
+      setEditing(null);
+      setSending(false);
+      return;
+    }
+
+    // E2EE encrypt for all participants
     const recipients = participantIds.length ? participantIds : [user.id];
     const enc = await encryptForRecipients(content, recipients);
-    const payload = enc
+    const payload: any = enc
       ? { conversation_id: id, sender_id: user.id, content: enc.ciphertext, iv: enc.iv, encrypted_keys: enc.encrypted_keys, is_encrypted: true }
       : { conversation_id: id, sender_id: user.id, content };
-    const { error } = await supabase.from("messages").insert(payload as any);
+    if (replyTo?.id) payload.reply_to = replyTo.id;
+    const { error } = await supabase.from("messages").insert(payload);
     if (error) toast.error(error.message);
+    setReplyTo(null);
     setSending(false);
   };
+
+  const openActions = (m: any) => {
+    if (m.message_type === "call" || m.deleted_for_everyone) return;
+    setActionTarget({
+      id: m.id,
+      content: m.content || "",
+      sender_id: m.sender_id,
+      message_type: m.message_type,
+      deleted_for_everyone: m.deleted_for_everyone,
+      isMine: m.sender_id === user?.id,
+    });
+  };
+
+  const startLongPress = (m: any) => {
+    if (longPressRef.current) window.clearTimeout(longPressRef.current);
+    longPressRef.current = window.setTimeout(() => openActions(m), 450);
+  };
+  const cancelLongPress = () => {
+    if (longPressRef.current) { window.clearTimeout(longPressRef.current); longPressRef.current = null; }
+  };
+
 
   const uploadFile = async (file: File) => {
     if (!user || !id) return;
@@ -302,19 +388,50 @@ export default function Chat() {
         )}
       </div>
 
+      {/* Pinned banner */}
+      {pinnedIds.size > 0 && (() => {
+        const pm = messages.find((x) => pinnedIds.has(x.id));
+        if (!pm) return null;
+        return (
+          <div className="mx-5 mb-1 flex items-center gap-2 bg-white/80 backdrop-blur rounded-2xl px-3 py-2 shadow-[var(--shadow-pill)] border border-border/40">
+            <PinIcon className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
+            <p className="text-xs truncate flex-1"><span className="font-semibold">Pinned · </span>{pm.deleted_for_everyone ? "deleted message" : (pm.content || pm.message_type)}</p>
+          </div>
+        );
+      })()}
+
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3 pb-28">
         {messages.map((m) => {
           const me = m.sender_id === user?.id;
+          const reacts = reactions[m.id] || [];
+          const replyMsg = m.reply_to ? messages.find((x) => x.id === m.reply_to) : null;
+          const deleted = m.deleted_for_everyone;
           return (
             <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
               <div className="max-w-[75%] relative">
-                <div className={`px-4 py-3 rounded-3xl ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"}`}>
-                  {isGroup && !me && (
+                <div
+                  onContextMenu={(e) => { e.preventDefault(); openActions(m); }}
+                  onTouchStart={() => startLongPress(m)}
+                  onTouchEnd={cancelLongPress}
+                  onTouchMove={cancelLongPress}
+                  onTouchCancel={cancelLongPress}
+                  onDoubleClick={() => openActions(m)}
+                  className={`px-4 py-3 rounded-3xl select-none ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"} ${deleted ? "italic opacity-70" : ""}`}
+                >
+                  {isGroup && !me && !deleted && (
                     <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--primary))" }}>
                       {senderMap[m.sender_id]?.name || "Member"}
                     </p>
                   )}
-                  {m.message_type === "call" ? (
+                  {replyMsg && !deleted && (
+                    <div className="mb-2 pl-2 border-l-2 rounded-md bg-black/5 px-2 py-1" style={{ borderColor: "hsl(var(--primary))" }}>
+                      <p className="text-[10px] font-semibold opacity-80">{senderMap[replyMsg.sender_id]?.name || (replyMsg.sender_id === user?.id ? "You" : "Reply")}</p>
+                      <p className="text-[11px] truncate opacity-80">{replyMsg.deleted_for_everyone ? "deleted message" : (replyMsg.content || replyMsg.message_type)}</p>
+                    </div>
+                  )}
+                  {deleted ? (
+                    <p className="text-sm">🚫 This message was deleted</p>
+                  ) : m.message_type === "call" ? (
                     <p className="text-sm flex items-center gap-2">
                       {(m.content || "").toLowerCase().includes("missed") ? (
                         <PhoneMissed className="w-4 h-4 text-destructive" />
@@ -334,25 +451,42 @@ export default function Chat() {
                   ) : m.message_type === "file" && m.media_url ? (
                     <a href={m.media_url} target="_blank" rel="noreferrer" className="underline">{m.content}</a>
                   ) : (
-                    <p className="text-sm leading-relaxed">{m.content}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{m.content}</p>
                   )}
                 </div>
+                {reacts.length > 0 && (
+                  <div className={`flex flex-wrap gap-1 mt-1 ${me ? "justify-end" : "justify-start"}`}>
+                    {reacts.map((r) => (
+                      <button
+                        key={r.emoji}
+                        onClick={() => { setActionTarget({ id: m.id, content: m.content || "", sender_id: m.sender_id, message_type: m.message_type, isMine: me }); }}
+                        className={`text-[11px] leading-none px-2 py-0.5 rounded-full border ${r.mine ? "bg-primary/10 border-primary/40" : "bg-white border-border/50"} shadow-sm`}
+                      >
+                        <span className="mr-0.5">{r.emoji}</span>
+                        <span className="text-muted-foreground">{r.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <p className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
+                  {pinnedIds.has(m.id) && <PinIcon className="w-3 h-3" />}
                   {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-500" />}
+                  {m.edited_at && !deleted && <span className="italic">edited</span>}
                   <span>{format(new Date(m.created_at), "HH:mm")}</span>
                   {me && renderTicks(m)}
                 </p>
                 <button
-                  onClick={() => toggleStar(m.id)}
+                  onClick={() => openActions(m)}
                   className={`absolute -top-2 ${me ? "-left-7" : "-right-7"} w-6 h-6 rounded-full bg-white shadow-[var(--shadow-pill)] items-center justify-center hidden group-hover:flex`}
-                  aria-label="Star message"
+                  aria-label="Message actions"
                 >
-                  <Star className={`w-3 h-3 ${starred.has(m.id) ? "fill-current text-yellow-500" : "text-muted-foreground"}`} />
+                  <span className="text-[10px]">⋯</span>
                 </button>
               </div>
             </div>
           );
         })}
+
 
         {otherTyping && (
           <div className="flex justify-start animate-fade-in">
@@ -366,6 +500,20 @@ export default function Chat() {
       </div>
 
       <div className="fixed bottom-4 left-0 right-0 px-5">
+        {(replyTo || editing) && (
+          <div className="mb-2 flex items-center gap-2 bg-white rounded-2xl px-3 py-2 shadow-[var(--shadow-pill)] border border-border/40 animate-fade-in">
+            <div className="w-1 h-8 rounded-full" style={{ background: "var(--gradient-cta)" }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--primary))" }}>
+                {editing ? "Editing message" : `Replying to ${senderMap[replyTo?.sender_id]?.name || (replyTo?.sender_id === user?.id ? "yourself" : other?.name || "message")}`}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">{(editing || replyTo)?.content}</p>
+            </div>
+            <button onClick={() => { setReplyTo(null); if (editing) { setEditing(null); setText(""); } }} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 bg-white rounded-full pl-4 pr-2 h-14 shadow-[var(--shadow-pill)]">
             <button onClick={() => fileRef.current?.click()}>
@@ -375,7 +523,7 @@ export default function Chat() {
               value={text}
               onChange={(e) => onTextChange(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Type your message..."
+              placeholder={editing ? "Edit your message…" : "Type your message..."}
               className="flex-1 bg-transparent outline-none text-sm"
             />
             <button><Mic className="w-5 h-5 text-muted-foreground" /></button>
@@ -387,6 +535,19 @@ export default function Chat() {
         <input ref={fileRef} type="file" accept="image/*,video/*,audio/*,application/*" hidden onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
       </div>
       <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} other={other} conversationId={id} onCall={(t) => { setProfileOpen(false); startCall(t); }} />
+      <MessageActionSheet
+        open={!!actionTarget}
+        target={actionTarget}
+        userId={user?.id}
+        isStarred={actionTarget ? starred.has(actionTarget.id) : false}
+        isPinned={actionTarget ? pinnedIds.has(actionTarget.id) : false}
+        onClose={() => setActionTarget(null)}
+        onReply={(m) => { const full = messages.find((x) => x.id === m.id); setReplyTo(full || m); setEditing(null); }}
+        onEdit={(m) => { const full = messages.find((x) => x.id === m.id); setEditing(full || m); setReplyTo(null); setText((full || m).content || ""); }}
+        onPinned={() => { loadPins(); }}
+        onDeleted={() => {}}
+        onStarToggle={() => { if (actionTarget) toggleStar(actionTarget.id); }}
+      />
     </div>
   );
 }

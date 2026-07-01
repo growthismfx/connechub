@@ -9,8 +9,8 @@ import NotesStrip from "@/components/NotesStrip";
 import BottomNav from "@/components/BottomNav";
 import { formatDistanceToNow } from "date-fns";
 
-const TABS = ["All", "Unread", "Groups", "Channels"] as const;
-type Tab = typeof TABS[number];
+const BASE_TABS = ["All", "Unread", "Groups", "Channels"] as const;
+type Tab = string;
 
 export default function Chats() {
   const { user, profile } = useAuth();
@@ -18,6 +18,8 @@ export default function Chats() {
   const [stories, setStories] = useState<any[]>([]);
   const [tab, setTab] = useState<Tab>("All");
   const [q, setQ] = useState("");
+  const [folders, setFolders] = useState<{ id: string; name: string; icon?: string | null }[]>([]);
+  const [folderItems, setFolderItems] = useState<Record<string, Set<string>>>({});
   const nav = useNavigate();
 
   const load = async () => {
@@ -96,28 +98,72 @@ export default function Chats() {
     } catch { setStories([]); }
   };
 
+  const loadFolders = async () => {
+    if (!user) return;
+    const { data: fs } = await supabase.from("chat_folders" as any).select("id, name, icon").eq("user_id", user.id).order("sort_order");
+    setFolders((fs || []) as any);
+    const fids = (fs || []).map((f: any) => f.id);
+    if (!fids.length) return setFolderItems({});
+    const { data: items } = await supabase.from("chat_folder_items" as any).select("folder_id, conversation_id").in("folder_id", fids);
+    const map: Record<string, Set<string>> = {};
+    (items || []).forEach((it: any) => {
+      map[it.folder_id] = map[it.folder_id] || new Set();
+      map[it.folder_id].add(it.conversation_id);
+    });
+    setFolderItems(map);
+  };
+
   useEffect(() => {
     load();
     loadStories();
+    loadFolders();
     const ch = supabase.channel("chats-list")
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_participants" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_folders" }, loadFolders)
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_folder_items" }, loadFolders)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user]);
 
+  const createFolder = async () => {
+    if (!user) return;
+    const name = window.prompt("Folder name?");
+    if (!name?.trim()) return;
+    await supabase.from("chat_folders" as any).insert({ user_id: user.id, name: name.trim() } as any);
+    loadFolders();
+  };
+
+  const toggleInFolder = async (folderId: string, conversationId: string) => {
+    const inSet = folderItems[folderId]?.has(conversationId);
+    if (inSet) {
+      await supabase.from("chat_folder_items" as any).delete().eq("folder_id", folderId).eq("conversation_id", conversationId);
+    } else {
+      await supabase.from("chat_folder_items" as any).insert({ folder_id: folderId, conversation_id: conversationId } as any);
+    }
+    loadFolders();
+  };
+
   const filtered = useMemo(() => {
     let r = rows;
     if (tab === "Groups") r = r.filter((x) => x.is_group);
-    if (tab === "Channels") r = [];
+    else if (tab === "Channels") r = [];
+    else if (tab !== "All" && tab !== "Unread") {
+      const folder = folders.find((f) => f.id === tab);
+      if (folder) {
+        const set = folderItems[folder.id] || new Set();
+        r = r.filter((x) => set.has(x.id));
+      }
+    }
     if (q.trim()) {
       const s = q.toLowerCase();
       r = r.filter((x) => (x.other.name || "").toLowerCase().includes(s) || (x.last_message || "").toLowerCase().includes(s));
     }
     return r;
-  }, [rows, tab, q]);
+  }, [rows, tab, q, folders, folderItems]);
+
 
   return (
     <div className="min-h-screen pb-32">
@@ -196,26 +242,35 @@ export default function Chats() {
 
       {/* Tabs */}
       <div className="px-5 mb-3 overflow-x-auto no-scrollbar">
-        <div className="flex gap-2">
-          {TABS.map((t) => {
-            const active = tab === t;
+        <div className="flex gap-2 items-center">
+          {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
+            const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
+            const active = tab === key;
             return (
               <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="px-4 h-8 rounded-full text-sm font-medium transition-all active:scale-95"
+                key={key}
+                onClick={() => setTab(key)}
+                className="px-4 h-8 rounded-full text-sm font-medium transition-all active:scale-95 whitespace-nowrap"
                 style={{
                   background: active ? "var(--gradient-cta)" : "hsl(var(--muted))",
                   color: active ? "white" : "hsl(var(--muted-foreground))",
                   boxShadow: active ? "var(--shadow-pill)" : "none",
                 }}
               >
-                {t}
+                {label}
               </button>
             );
           })}
+          <button
+            onClick={createFolder}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground border border-dashed border-border shrink-0 active:scale-95"
+            aria-label="Add folder"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
+
 
       {/* List */}
       <div className="px-5">
