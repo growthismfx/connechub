@@ -167,7 +167,8 @@ export default function Chats() {
     let r = rows;
     if (tab === "Groups") r = r.filter((x) => x.is_group);
     else if (tab === "Channels") r = [];
-    else if (tab !== "All" && tab !== "Unread") {
+    else if (tab === "Unread") r = r.filter((x) => (unreadMap[x.id] || 0) > 0);
+    else if (tab !== "All") {
       const folder = folders.find((f) => f.id === tab);
       if (folder) {
         const set = folderItems[folder.id] || new Set();
@@ -179,7 +180,7 @@ export default function Chats() {
       r = r.filter((x) => (x.other.name || "").toLowerCase().includes(s) || (x.last_message || "").toLowerCase().includes(s));
     }
     return r;
-  }, [rows, tab, q, folders, folderItems]);
+  }, [rows, tab, q, folders, folderItems, unreadMap]);
 
 
   return (
