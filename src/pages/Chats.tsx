@@ -132,13 +132,15 @@ export default function Chats() {
     load();
     loadStories();
     loadFolders();
+    loadUnread();
     const ch = supabase.channel("chats-list")
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => { load(); loadUnread(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_participants" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_folders" }, loadFolders)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_folder_items" }, loadFolders)
+      .on("postgres_changes", { event: "*", schema: "public", table: "statuses" }, loadStories)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user]);
