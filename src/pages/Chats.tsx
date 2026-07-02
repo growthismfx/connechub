@@ -87,15 +87,30 @@ export default function Chats() {
     if (!user) return;
     try {
       const { data } = await supabase
-        .from("status_updates" as any)
+        .from("statuses")
         .select("user_id")
-        .gte("expires_at" as any, new Date().toISOString())
-        .limit(20);
+        .gt("expires_at", new Date().toISOString())
+        .neq("user_id", user.id)
+        .limit(50);
       const uids = [...new Set((data || []).map((s: any) => s.user_id))];
       if (!uids.length) return setStories([]);
       const { data: ps } = await supabase.from("profiles").select("id, name, avatar_url").in("id", uids);
       setStories(ps || []);
     } catch { setStories([]); }
+  };
+
+  const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
+  const loadUnread = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("messages")
+      .select("conversation_id")
+      .neq("sender_id", user.id)
+      .is("read_at", null)
+      .limit(500);
+    const m: Record<string, number> = {};
+    (data || []).forEach((r: any) => { m[r.conversation_id] = (m[r.conversation_id] || 0) + 1; });
+    setUnreadMap(m);
   };
 
   const loadFolders = async () => {
