@@ -328,6 +328,11 @@ export default function Chats() {
               <div className="flex items-center gap-1 text-muted-foreground">
                 {r.muted && <BellOff className="w-3 h-3" />}
                 {r.pinned && <Pin className="w-3 h-3 fill-current" />}
+                {(unreadMap[r.id] || 0) > 0 && (
+                  <span className="min-w-[20px] h-5 px-1.5 rounded-full text-white text-[11px] font-semibold flex items-center justify-center" style={{ background: "var(--gradient-cta)" }}>
+                    {unreadMap[r.id] > 99 ? "99+" : unreadMap[r.id]}
+                  </span>
+                )}
               </div>
             </div>
           </button>
