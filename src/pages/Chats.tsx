@@ -87,15 +87,30 @@ export default function Chats() {
     if (!user) return;
     try {
       const { data } = await supabase
-        .from("status_updates" as any)
+        .from("statuses")
         .select("user_id")
-        .gte("expires_at" as any, new Date().toISOString())
-        .limit(20);
+        .gt("expires_at", new Date().toISOString())
+        .neq("user_id", user.id)
+        .limit(50);
       const uids = [...new Set((data || []).map((s: any) => s.user_id))];
       if (!uids.length) return setStories([]);
       const { data: ps } = await supabase.from("profiles").select("id, name, avatar_url").in("id", uids);
       setStories(ps || []);
     } catch { setStories([]); }
+  };
+
+  const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
+  const loadUnread = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("messages")
+      .select("conversation_id")
+      .neq("sender_id", user.id)
+      .is("read_at", null)
+      .limit(500);
+    const m: Record<string, number> = {};
+    (data || []).forEach((r: any) => { m[r.conversation_id] = (m[r.conversation_id] || 0) + 1; });
+    setUnreadMap(m);
   };
 
   const loadFolders = async () => {
@@ -117,13 +132,15 @@ export default function Chats() {
     load();
     loadStories();
     loadFolders();
+    loadUnread();
     const ch = supabase.channel("chats-list")
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => { load(); loadUnread(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_participants" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_folders" }, loadFolders)
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_folder_items" }, loadFolders)
+      .on("postgres_changes", { event: "*", schema: "public", table: "statuses" }, loadStories)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user]);
@@ -150,7 +167,8 @@ export default function Chats() {
     let r = rows;
     if (tab === "Groups") r = r.filter((x) => x.is_group);
     else if (tab === "Channels") r = [];
-    else if (tab !== "All" && tab !== "Unread") {
+    else if (tab === "Unread") r = r.filter((x) => (unreadMap[x.id] || 0) > 0);
+    else if (tab !== "All") {
       const folder = folders.find((f) => f.id === tab);
       if (folder) {
         const set = folderItems[folder.id] || new Set();
@@ -162,7 +180,7 @@ export default function Chats() {
       r = r.filter((x) => (x.other.name || "").toLowerCase().includes(s) || (x.last_message || "").toLowerCase().includes(s));
     }
     return r;
-  }, [rows, tab, q, folders, folderItems]);
+  }, [rows, tab, q, folders, folderItems, unreadMap]);
 
 
   return (
@@ -310,6 +328,11 @@ export default function Chats() {
               <div className="flex items-center gap-1 text-muted-foreground">
                 {r.muted && <BellOff className="w-3 h-3" />}
                 {r.pinned && <Pin className="w-3 h-3 fill-current" />}
+                {(unreadMap[r.id] || 0) > 0 && (
+                  <span className="min-w-[20px] h-5 px-1.5 rounded-full text-white text-[11px] font-semibold flex items-center justify-center" style={{ background: "var(--gradient-cta)" }}>
+                    {unreadMap[r.id] > 99 ? "99+" : unreadMap[r.id]}
+                  </span>
+                )}
               </div>
             </div>
           </button>
