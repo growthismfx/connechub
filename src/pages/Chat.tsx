@@ -14,7 +14,7 @@ import { Pin as PinIcon, X } from "lucide-react";
 
 export default function Chat() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const nav = useNavigate();
   const [other, setOther] = useState<any>(null);
   const [connectedVia, setConnectedVia] = useState<"username" | "phone">("username");
