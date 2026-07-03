@@ -229,22 +229,11 @@ export default function Settings() {
           <Toggle label="Push notifications" sub={pushSupported ? "Alerts when app is closed" : "Not supported here"} checked={pushEnabled} onChange={handlePushToggle} disabled={!pushSupported} />
         </Panel>
 
-        <NavRow icon={Palette} label="Appearance" k="appear" />
-        <Panel k="appear">
-          <div className="grid grid-cols-2 gap-2">
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTheme(t.id)}
-                className={`relative rounded-2xl p-3 text-left border-2 transition-all ${theme === t.id ? "border-foreground" : "border-transparent"}`}
-                style={{ background: t.preview }}
-              >
-                <p className="font-semibold text-sm" style={{ color: t.id === "midnight" || t.id === "samsung" ? "white" : "inherit" }}>{t.name}</p>
-                <p className="text-[10px] opacity-80" style={{ color: t.id === "midnight" || t.id === "samsung" ? "white" : "inherit" }}>{t.description}</p>
-              </button>
-            ))}
-          </div>
-        </Panel>
+        <button onClick={() => nav("/settings/appearance")} className="w-full flex items-center gap-4 px-5 py-4 text-left active:bg-muted/40 transition-colors">
+          <Palette className="w-[18px] h-[18px] text-muted-foreground" />
+          <span className="flex-1 text-[15px] font-medium">Appearance & wallpaper</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
 
         <NavRow icon={Languages} label="Language" k="lang" />
         <Panel k="lang">
