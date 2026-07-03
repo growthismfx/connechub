@@ -553,6 +553,7 @@ export default function Chat() {
         onDeleted={() => {}}
         onStarToggle={() => { if (actionTarget) toggleStar(actionTarget.id); }}
       />
+      </div>
     </div>
   );
 }
