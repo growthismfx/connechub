@@ -14,7 +14,7 @@ import { Pin as PinIcon, X } from "lucide-react";
 
 export default function Chat() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const nav = useNavigate();
   const [other, setOther] = useState<any>(null);
   const [connectedVia, setConnectedVia] = useState<"username" | "phone">("username");
@@ -345,8 +345,13 @@ export default function Chat() {
     return <Check className="w-3.5 h-3.5 inline text-muted-foreground" />;
   };
 
+  const wallpaper = (profile as any)?.wallpaper_url;
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
+      {wallpaper && (
+        <div className="fixed inset-0 pointer-events-none z-0" style={{ background: wallpaper.startsWith("http") ? `url(${wallpaper}) center/cover` : wallpaper, opacity: 0.5 }} />
+      )}
+      <div className="relative z-[1] flex flex-col flex-1 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-12 pb-4 bg-white/60 backdrop-blur sticky top-0 z-10">
         <div className="flex items-center gap-3 min-w-0">
@@ -548,6 +553,7 @@ export default function Chat() {
         onDeleted={() => {}}
         onStarToggle={() => { if (actionTarget) toggleStar(actionTarget.id); }}
       />
+      </div>
     </div>
   );
 }

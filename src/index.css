@@ -144,6 +144,73 @@
     color: hsl(220 20% 95%);
   }
 
+  /* Neon — cyberpunk */
+  .theme-neon {
+    --background: 280 40% 8%;
+    --foreground: 300 100% 95%;
+    --card: 280 40% 12%;
+    --card-foreground: 300 100% 95%;
+    --popover: 280 40% 12%;
+    --popover-foreground: 300 100% 95%;
+    --primary: 320 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 280 40% 18%;
+    --secondary-foreground: 300 100% 95%;
+    --muted: 280 30% 18%;
+    --muted-foreground: 300 40% 75%;
+    --accent: 190 100% 55%;
+    --border: 300 60% 30%;
+    --input: 280 40% 20%;
+    --bubble-them: 280 40% 18%;
+    --radius: 1rem;
+    --nav-radius: 9999px;
+    --btn-radius: 9999px;
+    --gradient-bubble: linear-gradient(135deg, hsl(320 100% 60%), hsl(280 100% 60%), hsl(190 100% 55%));
+    --gradient-cta: linear-gradient(135deg, hsl(320 100% 60%), hsl(190 100% 55%));
+    --gradient-card: linear-gradient(135deg, hsl(280 40% 15%), hsl(320 40% 18%));
+    --gradient-page: linear-gradient(180deg, hsl(280 45% 8%), hsl(320 45% 10%));
+    --shadow-bubble: 0 0 24px hsl(320 100% 60% / 0.5);
+  }
+  .theme-neon .bg-white, .theme-neon [class*="bg-white"] { background: hsl(280 40% 14%) !important; color: hsl(300 100% 95%); }
+
+  /* Material You */
+  .theme-material {
+    --background: 270 40% 98%;
+    --foreground: 270 20% 15%;
+    --card: 0 0% 100%;
+    --primary: 260 45% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 270 30% 94%;
+    --muted: 270 20% 94%;
+    --accent: 260 40% 90%;
+    --bubble-them: 270 30% 92%;
+    --radius: 1.5rem;
+    --nav-radius: 2rem;
+    --btn-radius: 1.75rem;
+    --gradient-bubble: linear-gradient(135deg, hsl(260 45% 55%), hsl(280 40% 60%));
+    --gradient-cta: linear-gradient(135deg, hsl(260 45% 47%), hsl(280 40% 55%));
+    --gradient-card: linear-gradient(135deg, hsl(270 40% 96%), hsl(260 40% 94%));
+    --gradient-page: linear-gradient(180deg, hsl(270 40% 98%), hsl(260 30% 96%));
+  }
+
+  /* Aurora Gradient */
+  .theme-gradient {
+    --background: 200 60% 97%;
+    --foreground: 240 30% 15%;
+    --card: 0 0% 100%;
+    --primary: 200 90% 55%;
+    --primary-foreground: 0 0% 100%;
+    --bubble-them: 200 40% 92%;
+    --radius: 1.25rem;
+    --nav-radius: 9999px;
+    --btn-radius: 9999px;
+    --gradient-bubble: linear-gradient(135deg, hsl(330 100% 75%), hsl(220 90% 75%), hsl(150 70% 70%));
+    --gradient-cta: linear-gradient(135deg, hsl(330 100% 70%), hsl(220 90% 65%), hsl(150 70% 60%));
+    --gradient-card: linear-gradient(135deg, hsl(330 100% 96%), hsl(220 90% 96%), hsl(150 70% 96%));
+    --gradient-page: linear-gradient(135deg, hsl(330 100% 96%), hsl(220 90% 96%), hsl(150 70% 96%));
+    --gradient-mesh: radial-gradient(circle at 20% 10%, hsl(330 100% 88% / 0.6), transparent 40%), radial-gradient(circle at 85% 20%, hsl(220 90% 88% / 0.6), transparent 45%), radial-gradient(circle at 50% 90%, hsl(150 70% 88% / 0.6), transparent 50%);
+  }
+
   /* Default sunrise extras */
   :root {
     --nav-radius: 9999px;
