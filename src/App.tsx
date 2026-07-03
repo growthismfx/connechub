@@ -29,6 +29,8 @@ import EditProfile from "./pages/EditProfile";
 import PrivacySettings from "./pages/PrivacySettings";
 import NotesSettings from "./pages/NotesSettings";
 import StatusSettings from "./pages/StatusSettings";
+import AppearanceSettings from "./pages/AppearanceSettings";
+import PublicProfile from "./pages/PublicProfile";
 
 
 const queryClient = new QueryClient();
@@ -73,6 +75,8 @@ const App = () => (
             <Route path="/settings/privacy" element={<Protected><PrivacySettings /></Protected>} />
             <Route path="/settings/notes" element={<Protected><NotesSettings /></Protected>} />
             <Route path="/settings/status" element={<Protected><StatusSettings /></Protected>} />
+            <Route path="/settings/appearance" element={<Protected><AppearanceSettings /></Protected>} />
+            <Route path="/u/:username" element={<Protected><PublicProfile /></Protected>} />
             <Route path="*" element={<NotFound />} />
 
           </Routes>
