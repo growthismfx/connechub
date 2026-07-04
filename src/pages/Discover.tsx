@@ -149,6 +149,13 @@ export default function Discover() {
             </button>
           </div>
         </div>
+        <button onClick={() => nav("/servers")} className="mt-3 w-full rounded-2xl p-4 border bg-card flex items-center gap-3 hover:bg-accent/50 transition text-left">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">#</div>
+          <div className="flex-1">
+            <div className="font-semibold text-sm">Servers</div>
+            <div className="text-xs text-muted-foreground">Discord-style communities with channels & voice</div>
+          </div>
+        </button>
       </div>
 
       {/* Search */}
