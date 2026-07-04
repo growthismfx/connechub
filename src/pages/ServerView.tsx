@@ -41,12 +41,19 @@ export default function ServerView() {
     const [{ data: s }, { data: chs }, { data: mems }] = await Promise.all([
       supabase.from("servers").select("*").eq("id", id).maybeSingle(),
       supabase.from("server_channels").select("*").eq("server_id", id).order("position"),
-      supabase.from("server_members").select("user_id, nickname, profile:profiles!server_members_user_id_fkey(name, avatar_url, username)").eq("server_id", id),
+      supabase.from("server_members").select("user_id, nickname").eq("server_id", id),
     ]);
     if (!s) { toast.error("Server not found"); nav("/servers"); return; }
     setServer(s as any);
     setChannels((chs as any) || []);
-    setMembers((mems as any) || []);
+    const memRows = (mems as any[]) || [];
+    const ids = memRows.map((m) => m.user_id);
+    let profs: any[] = [];
+    if (ids.length) {
+      const { data: pr } = await supabase.from("profiles").select("id, name, avatar_url, username").in("id", ids);
+      profs = pr || [];
+    }
+    setMembers(memRows.map((m) => ({ ...m, profile: profs.find((p) => p.id === m.user_id) })));
     const firstText = (chs as any || []).find((c: Channel) => c.type === "text");
     if (firstText && !activeCh) setActiveCh(firstText);
   };

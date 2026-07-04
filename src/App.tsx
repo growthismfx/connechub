@@ -31,6 +31,8 @@ import NotesSettings from "./pages/NotesSettings";
 import StatusSettings from "./pages/StatusSettings";
 import AppearanceSettings from "./pages/AppearanceSettings";
 import PublicProfile from "./pages/PublicProfile";
+import Servers from "./pages/Servers";
+import ServerView from "./pages/ServerView";
 
 
 const queryClient = new QueryClient();
@@ -77,6 +79,8 @@ const App = () => (
             <Route path="/settings/status" element={<Protected><StatusSettings /></Protected>} />
             <Route path="/settings/appearance" element={<Protected><AppearanceSettings /></Protected>} />
             <Route path="/u/:username" element={<Protected><PublicProfile /></Protected>} />
+            <Route path="/servers" element={<Protected><Servers /></Protected>} />
+            <Route path="/servers/:id" element={<Protected><ServerView /></Protected>} />
             <Route path="*" element={<NotFound />} />
 
           </Routes>
