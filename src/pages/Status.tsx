@@ -615,6 +615,14 @@ export default function Status() {
           </Button>
         </DialogContent>
       </Dialog>
+      <MusicPicker
+        open={musicPickerOpen}
+        onOpenChange={setMusicPickerOpen}
+        onSelect={(t) => {
+          setMusicTitle(t.title); setMusicArtist(t.artist);
+          setMusicUrl(t.previewUrl); setMusicThumb(t.artworkUrl);
+        }}
+      />
 
       {/* Viewer */}
       {current && (
