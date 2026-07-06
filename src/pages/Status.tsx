@@ -444,9 +444,23 @@ export default function Status() {
         )}
         {composerType === "music" && (
           <div className="space-y-2">
-            <Input value={musicTitle} onChange={(e) => setMusicTitle(e.target.value)} placeholder="Song title" className="rounded-full h-10" />
-            <Input value={musicArtist} onChange={(e) => setMusicArtist(e.target.value)} placeholder="Artist" className="rounded-full h-10" />
-            <Input value={musicUrl} onChange={(e) => setMusicUrl(e.target.value)} placeholder="YouTube / audio link" className="rounded-full h-10" />
+            {musicTitle ? (
+              <div className="flex items-center gap-3 p-2 rounded-2xl bg-muted">
+                {musicThumb && <img src={musicThumb} alt="" className="w-12 h-12 rounded-lg" />}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{musicTitle}</p>
+                  <p className="text-xs text-muted-foreground truncate">{musicArtist}</p>
+                </div>
+                <Button size="sm" variant="ghost" className="rounded-full"
+                  onClick={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); }}>
+                  Change
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={() => setMusicPickerOpen(true)} className="w-full rounded-full h-11" variant="outline">
+                <Music2 className="w-4 h-4 mr-2" /> Search music
+              </Button>
+            )}
           </div>
         )}
         {composerType === "location" && (
