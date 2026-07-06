@@ -255,6 +255,7 @@ export default function Status() {
       if (composerType === "link") { base.link_url = linkUrl; base.link_title = linkTitle || text; }
       if (composerType === "music") {
         base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
+        base.music_thumbnail = musicThumb || null;
         base.media_url = media_url; base.media_type = media_type;
       }
       if (composerType === "location") base.location = { name: locationName };
