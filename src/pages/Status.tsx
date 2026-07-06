@@ -81,6 +81,8 @@ export default function Status() {
   const [musicTitle, setMusicTitle] = useState("");
   const [musicArtist, setMusicArtist] = useState("");
   const [musicUrl, setMusicUrl] = useState("");
+  const [musicThumb, setMusicThumb] = useState("");
+  const [musicPickerOpen, setMusicPickerOpen] = useState(false);
   const [locationName, setLocationName] = useState("");
   const [privacy, setPrivacy] = useState<string>("everyone");
   const [allowReplies, setAllowReplies] = useState(true);
