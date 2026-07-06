@@ -691,7 +691,14 @@ export default function Status() {
             <button onClick={closeViewer} className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center"><X className="w-5 h-5 text-white" /></button>
           </div>
 
-          <button onClick={goPrev} className="absolute left-0 top-0 bottom-0 w-1/3 z-10" />
+            <button onClick={goPrev} className="absolute left-0 top-0 bottom-0 w-1/3 z-10" />
+            {current.story_type !== "music" && current.music_url && (
+              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur text-white text-xs max-w-[80%]">
+                {current.music_thumbnail && <img src={current.music_thumbnail} className="w-6 h-6 rounded" alt="" />}
+                <Music2 className="w-3 h-3 shrink-0" />
+                <span className="truncate">{current.music_title} · {current.music_artist}</span>
+              </div>
+            )}
           <button onClick={goNext} className="absolute right-0 top-0 bottom-0 w-1/3 z-10" />
 
           {/* Content */}
