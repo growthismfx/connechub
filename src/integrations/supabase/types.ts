@@ -1160,9 +1160,12 @@ export type Database = {
           media_url: string | null
           mentions: string[] | null
           music_artist: string | null
+          music_duration_seconds: number | null
+          music_start_seconds: number | null
           music_thumbnail: string | null
           music_title: string | null
           music_url: string | null
+          mute_original: boolean | null
           poll_options: Json | null
           poll_question: string | null
           privacy: string
@@ -1197,9 +1200,12 @@ export type Database = {
           media_url?: string | null
           mentions?: string[] | null
           music_artist?: string | null
+          music_duration_seconds?: number | null
+          music_start_seconds?: number | null
           music_thumbnail?: string | null
           music_title?: string | null
           music_url?: string | null
+          mute_original?: boolean | null
           poll_options?: Json | null
           poll_question?: string | null
           privacy?: string
@@ -1234,9 +1240,12 @@ export type Database = {
           media_url?: string | null
           mentions?: string[] | null
           music_artist?: string | null
+          music_duration_seconds?: number | null
+          music_start_seconds?: number | null
           music_thumbnail?: string | null
           music_title?: string | null
           music_url?: string | null
+          mute_original?: boolean | null
           poll_options?: Json | null
           poll_question?: string | null
           privacy?: string
