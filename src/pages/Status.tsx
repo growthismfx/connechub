@@ -288,6 +288,19 @@ export default function Status() {
   const closeViewer = () => { setViewerList([]); setViewerIdx(0); setViewers([]); setReplyText(""); };
 
   const current = viewerList[viewerIdx];
+  const storyAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Play attached music while viewing (any story type)
+    if (storyAudioRef.current) { storyAudioRef.current.pause(); storyAudioRef.current = null; }
+    if (!current?.music_url) return;
+    const a = new Audio(current.music_url);
+    a.crossOrigin = "anonymous";
+    a.currentTime = Number(current.music_start_seconds || 0);
+    a.play().catch(() => {});
+    storyAudioRef.current = a;
+    return () => { a.pause(); };
+  }, [current?.id, current?.music_url]);
 
   useEffect(() => {
     if (!current || !user) return;
