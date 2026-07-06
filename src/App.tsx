@@ -33,6 +33,7 @@ import AppearanceSettings from "./pages/AppearanceSettings";
 import PublicProfile from "./pages/PublicProfile";
 import Servers from "./pages/Servers";
 import ServerView from "./pages/ServerView";
+import AppLock from "./components/AppLock";
 
 
 const queryClient = new QueryClient();
