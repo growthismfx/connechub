@@ -6,7 +6,7 @@ import {
   Plus, Eye, Image as ImageIcon, Video as VideoIcon, Type, X,
   ChevronLeft, ChevronRight, BarChart3, HelpCircle, Brain,
   Timer, MapPin, Link2, Music2, AtSign, Repeat2, Heart, Send,
-  Sliders, Globe, Users, UserCheck, Shield,
+  Sliders, Globe, Users, UserCheck, Shield, Volume2, VolumeX,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
