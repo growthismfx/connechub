@@ -258,7 +258,15 @@ export default function Status() {
       if (composerType === "music") {
         base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
         base.music_thumbnail = musicThumb || null;
+        base.music_start_seconds = musicStart;
         base.media_url = media_url; base.media_type = media_type;
+      }
+      // Music attachment on photo/video/text stories
+      if (musicUrl && composerType !== "music" && ["photo","video","text"].includes(composerType)) {
+        base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
+        base.music_thumbnail = musicThumb || null;
+        base.music_start_seconds = musicStart;
+        if (composerType === "video") base.mute_original = muteOriginal;
       }
       if (composerType === "location") base.location = { name: locationName };
 
