@@ -455,22 +455,41 @@ export default function Status() {
         )}
         {composerType === "music" && (
           <div className="space-y-2">
-            {musicTitle ? (
-              <div className="flex items-center gap-3 p-2 rounded-2xl bg-muted">
-                {musicThumb && <img src={musicThumb} alt="" className="w-12 h-12 rounded-lg" />}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{musicTitle}</p>
-                  <p className="text-xs text-muted-foreground truncate">{musicArtist}</p>
-                </div>
-                <Button size="sm" variant="ghost" className="rounded-full"
-                  onClick={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); }}>
-                  Change
-                </Button>
-              </div>
+            {musicUrl ? (
+              <MusicTrimmer
+                previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
+                startSeconds={musicStart} onStartChange={setMusicStart}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+              />
             ) : (
               <Button onClick={() => setMusicPickerOpen(true)} className="w-full rounded-full h-11" variant="outline">
                 <Music2 className="w-4 h-4 mr-2" /> Search music
               </Button>
+            )}
+          </div>
+        )}
+
+        {/* Attach music to photo/video/text stories */}
+        {["photo","video","text"].includes(composerType) && (
+          <div className="space-y-2">
+            {musicUrl ? (
+              <MusicTrimmer
+                previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
+                startSeconds={musicStart} onStartChange={setMusicStart}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+              />
+            ) : (
+              <button onClick={() => setMusicPickerOpen(true)}
+                className="w-full flex items-center justify-center gap-2 h-10 rounded-full border border-dashed text-sm text-muted-foreground hover:bg-muted/50 transition">
+                <Music2 className="w-4 h-4" /> Add music
+              </button>
+            )}
+            {composerType === "video" && musicUrl && (
+              <button onClick={() => setMuteOriginal((v) => !v)}
+                className="w-full flex items-center justify-center gap-2 h-10 rounded-full bg-muted text-sm">
+                {muteOriginal ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {muteOriginal ? "Original audio muted" : "Original audio on"}
+              </button>
             )}
           </div>
         )}
