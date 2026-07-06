@@ -167,7 +167,7 @@ export default function Status() {
     setPollOptions(["Yes", "No"]); setQuizCorrect(0);
     setCountdownEnd(""); setCountdownTitle("");
     setLinkUrl(""); setLinkTitle("");
-    setMusicTitle(""); setMusicArtist(""); setMusicUrl("");
+    setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMuteOriginal(false);
     setLocationName("");
   };
 
