@@ -17,6 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import MusicPicker from "@/components/MusicPicker";
+import MusicTrimmer from "@/components/MusicTrimmer";
 
 const STORY_DURATION_MS = 5000;
 
