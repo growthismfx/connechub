@@ -6,7 +6,7 @@ import {
   Plus, Eye, Image as ImageIcon, Video as VideoIcon, Type, X,
   ChevronLeft, ChevronRight, BarChart3, HelpCircle, Brain,
   Timer, MapPin, Link2, Music2, AtSign, Repeat2, Heart, Send,
-  Sliders, Globe, Users, UserCheck, Shield,
+  Sliders, Globe, Users, UserCheck, Shield, Volume2, VolumeX,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,6 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import MusicPicker from "@/components/MusicPicker";
+import MusicTrimmer from "@/components/MusicTrimmer";
 
 const STORY_DURATION_MS = 5000;
 
@@ -83,6 +84,8 @@ export default function Status() {
   const [musicUrl, setMusicUrl] = useState("");
   const [musicThumb, setMusicThumb] = useState("");
   const [musicPickerOpen, setMusicPickerOpen] = useState(false);
+  const [musicStart, setMusicStart] = useState(0);
+  const [muteOriginal, setMuteOriginal] = useState(false);
   const [locationName, setLocationName] = useState("");
   const [privacy, setPrivacy] = useState<string>("everyone");
   const [allowReplies, setAllowReplies] = useState(true);
@@ -165,7 +168,7 @@ export default function Status() {
     setPollOptions(["Yes", "No"]); setQuizCorrect(0);
     setCountdownEnd(""); setCountdownTitle("");
     setLinkUrl(""); setLinkTitle("");
-    setMusicTitle(""); setMusicArtist(""); setMusicUrl("");
+    setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMuteOriginal(false);
     setLocationName("");
   };
 
@@ -256,7 +259,15 @@ export default function Status() {
       if (composerType === "music") {
         base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
         base.music_thumbnail = musicThumb || null;
+        base.music_start_seconds = musicStart;
         base.media_url = media_url; base.media_type = media_type;
+      }
+      // Music attachment on photo/video/text stories
+      if (musicUrl && composerType !== "music" && ["photo","video","text"].includes(composerType)) {
+        base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
+        base.music_thumbnail = musicThumb || null;
+        base.music_start_seconds = musicStart;
+        if (composerType === "video") base.mute_original = muteOriginal;
       }
       if (composerType === "location") base.location = { name: locationName };
 
@@ -277,6 +288,19 @@ export default function Status() {
   const closeViewer = () => { setViewerList([]); setViewerIdx(0); setViewers([]); setReplyText(""); };
 
   const current = viewerList[viewerIdx];
+  const storyAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Play attached music while viewing (any story type)
+    if (storyAudioRef.current) { storyAudioRef.current.pause(); storyAudioRef.current = null; }
+    if (!current?.music_url) return;
+    const a = new Audio(current.music_url);
+    a.crossOrigin = "anonymous";
+    a.currentTime = Number(current.music_start_seconds || 0);
+    a.play().catch(() => {});
+    storyAudioRef.current = a;
+    return () => { a.pause(); };
+  }, [current?.id, current?.music_url]);
 
   useEffect(() => {
     if (!current || !user) return;
@@ -444,22 +468,41 @@ export default function Status() {
         )}
         {composerType === "music" && (
           <div className="space-y-2">
-            {musicTitle ? (
-              <div className="flex items-center gap-3 p-2 rounded-2xl bg-muted">
-                {musicThumb && <img src={musicThumb} alt="" className="w-12 h-12 rounded-lg" />}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{musicTitle}</p>
-                  <p className="text-xs text-muted-foreground truncate">{musicArtist}</p>
-                </div>
-                <Button size="sm" variant="ghost" className="rounded-full"
-                  onClick={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); }}>
-                  Change
-                </Button>
-              </div>
+            {musicUrl ? (
+              <MusicTrimmer
+                previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
+                startSeconds={musicStart} onStartChange={setMusicStart}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+              />
             ) : (
               <Button onClick={() => setMusicPickerOpen(true)} className="w-full rounded-full h-11" variant="outline">
                 <Music2 className="w-4 h-4 mr-2" /> Search music
               </Button>
+            )}
+          </div>
+        )}
+
+        {/* Attach music to photo/video/text stories */}
+        {["photo","video","text"].includes(composerType) && (
+          <div className="space-y-2">
+            {musicUrl ? (
+              <MusicTrimmer
+                previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
+                startSeconds={musicStart} onStartChange={setMusicStart}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+              />
+            ) : (
+              <button onClick={() => setMusicPickerOpen(true)}
+                className="w-full flex items-center justify-center gap-2 h-10 rounded-full border border-dashed text-sm text-muted-foreground hover:bg-muted/50 transition">
+                <Music2 className="w-4 h-4" /> Add music
+              </button>
+            )}
+            {composerType === "video" && musicUrl && (
+              <button onClick={() => setMuteOriginal((v) => !v)}
+                className="w-full flex items-center justify-center gap-2 h-10 rounded-full bg-muted text-sm">
+                {muteOriginal ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {muteOriginal ? "Original audio muted" : "Original audio on"}
+              </button>
             )}
           </div>
         )}
@@ -648,13 +691,20 @@ export default function Status() {
             <button onClick={closeViewer} className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center"><X className="w-5 h-5 text-white" /></button>
           </div>
 
-          <button onClick={goPrev} className="absolute left-0 top-0 bottom-0 w-1/3 z-10" />
+            <button onClick={goPrev} className="absolute left-0 top-0 bottom-0 w-1/3 z-10" />
+            {current.story_type !== "music" && current.music_url && (
+              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur text-white text-xs max-w-[80%]">
+                {current.music_thumbnail && <img src={current.music_thumbnail} className="w-6 h-6 rounded" alt="" />}
+                <Music2 className="w-3 h-3 shrink-0" />
+                <span className="truncate">{current.music_title} · {current.music_artist}</span>
+              </div>
+            )}
           <button onClick={goNext} className="absolute right-0 top-0 bottom-0 w-1/3 z-10" />
 
           {/* Content */}
           <div className="flex-1 flex items-center justify-center" style={{ background: current.background || "var(--gradient-cta)" }}>
             {current.media_type === "image" && current.media_url && <img src={current.media_url} alt="" className="max-h-full max-w-full object-contain" />}
-            {current.media_type === "video" && current.media_url && <video src={current.media_url} autoPlay playsInline controls={false} onEnded={goNext} className="max-h-full max-w-full" />}
+            {current.media_type === "video" && current.media_url && <video src={current.media_url} autoPlay playsInline controls={false} muted={!!current.mute_original} onEnded={goNext} className="max-h-full max-w-full" />}
             {current.story_type === "text" && (
               <p className="font-bold text-center px-8" style={{ fontSize: current.layers?.fontSize || 28, color: current.layers?.fontColor || "#fff" }}>{current.content}</p>
             )}
