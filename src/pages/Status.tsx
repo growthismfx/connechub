@@ -684,7 +684,7 @@ export default function Status() {
           {/* Content */}
           <div className="flex-1 flex items-center justify-center" style={{ background: current.background || "var(--gradient-cta)" }}>
             {current.media_type === "image" && current.media_url && <img src={current.media_url} alt="" className="max-h-full max-w-full object-contain" />}
-            {current.media_type === "video" && current.media_url && <video src={current.media_url} autoPlay playsInline controls={false} onEnded={goNext} className="max-h-full max-w-full" />}
+            {current.media_type === "video" && current.media_url && <video src={current.media_url} autoPlay playsInline controls={false} muted={!!current.mute_original} onEnded={goNext} className="max-h-full max-w-full" />}
             {current.story_type === "text" && (
               <p className="font-bold text-center px-8" style={{ fontSize: current.layers?.fontSize || 28, color: current.layers?.fontColor || "#fff" }}>{current.content}</p>
             )}
