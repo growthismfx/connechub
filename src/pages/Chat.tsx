@@ -448,11 +448,15 @@ export default function Chat() {
                       <span>{m.content}</span>
                     </p>
                   ) : m.message_type === "image" && m.media_url ? (
-                    <img src={m.media_url} alt="" className="rounded-2xl max-w-full" />
+                    <button type="button" onClick={() => setMediaViewer({ type: "image", url: m.media_url })} className="block">
+                      <img src={m.media_url} alt="" className="rounded-2xl max-w-full cursor-zoom-in" />
+                    </button>
                   ) : m.message_type === "video" && m.media_url ? (
-                    <video src={m.media_url} controls className="rounded-2xl max-w-full" />
+                    <button type="button" onClick={() => setMediaViewer({ type: "video", url: m.media_url })} className="block w-full">
+                      <video src={m.media_url} className="rounded-2xl max-w-full cursor-zoom-in" />
+                    </button>
                   ) : m.message_type === "audio" && m.media_url ? (
-                    <audio src={m.media_url} controls />
+                    <audio src={m.media_url} controls className="w-full" />
                   ) : m.message_type === "file" && m.media_url ? (
                     <a href={m.media_url} target="_blank" rel="noreferrer" className="underline">{m.content}</a>
                   ) : (
