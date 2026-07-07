@@ -118,6 +118,49 @@ export default function PrivacySettings() {
         <Row label="About / status" sub="Show your bio on your profile" checked={showStatus} onChange={(v: boolean) => { setShowStatus(v); update({ show_status: v }); }} />
       </div>
 
+      <div className="bg-white rounded-3xl p-5 shadow-[var(--shadow-soft)] mb-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center"><Star className="w-5 h-5" /></div>
+          <div className="flex-1">
+            <p className="font-semibold">Close Friends</p>
+            <p className="text-xs text-muted-foreground">{closeFriends.length} people can see your "Close" stories</p>
+          </div>
+        </div>
+        <div className="relative mb-2">
+          <Input value={cfSearch} onChange={(e) => setCfSearch(e.target.value)} placeholder="Search by name or @username" className="rounded-full h-10" />
+          {cfResults.length > 0 && (
+            <div className="absolute z-10 left-0 right-0 mt-1 bg-white rounded-2xl shadow-lg border border-border/40 overflow-hidden">
+              {cfResults.map((p) => (
+                <button key={p.id} onClick={() => addCloseFriend(p.id)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted">
+                  <Avatar className="w-8 h-8"><AvatarImage src={p.avatar_url || undefined} /><AvatarFallback>{p.name?.[0]}</AvatarFallback></Avatar>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-sm font-medium truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">@{p.username}</p>
+                  </div>
+                  <Plus className="w-4 h-4 text-primary" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {closeFriends.length === 0 && <p className="text-xs text-muted-foreground text-center py-3">No close friends yet</p>}
+        <div className="space-y-2">
+          {closeFriends.map((c) => (
+            <div key={c.id} className="flex items-center gap-3 py-2 border-t">
+              <Avatar className="w-10 h-10"><AvatarImage src={c.avatar_url || undefined} /><AvatarFallback>{c.name?.[0]}</AvatarFallback></Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{c.name}</p>
+                <p className="text-xs text-muted-foreground truncate">@{c.username}</p>
+              </div>
+              <button onClick={() => removeCloseFriend(c.id)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center" aria-label="Remove">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+
       <div className="bg-white rounded-3xl p-5 shadow-[var(--shadow-soft)]">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center"><UserX className="w-5 h-5" /></div>
