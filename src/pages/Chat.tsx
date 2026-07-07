@@ -558,6 +558,37 @@ export default function Chat() {
         onDeleted={() => {}}
         onStarToggle={() => { if (actionTarget) toggleStar(actionTarget.id); }}
       />
+      {mediaViewer && (
+        <div
+          className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center animate-fade-in"
+          onClick={() => setMediaViewer(null)}
+        >
+          <button
+            aria-label="Close"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur"
+            onClick={(e) => { e.stopPropagation(); setMediaViewer(null); }}
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {mediaViewer.type === "image" ? (
+            <img
+              src={mediaViewer.url}
+              alt=""
+              className="max-w-[95vw] max-h-[95vh] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <video
+              src={mediaViewer.url}
+              controls
+              autoPlay
+              playsInline
+              className="max-w-[95vw] max-h-[95vh]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+        </div>
+      )}
       </div>
     </div>
   );
