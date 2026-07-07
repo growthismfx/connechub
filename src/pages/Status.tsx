@@ -85,6 +85,7 @@ export default function Status() {
   const [musicThumb, setMusicThumb] = useState("");
   const [musicPickerOpen, setMusicPickerOpen] = useState(false);
   const [musicStart, setMusicStart] = useState(0);
+  const [musicClip, setMusicClip] = useState(15);
   const [muteOriginal, setMuteOriginal] = useState(false);
   const [locationName, setLocationName] = useState("");
   const [privacy, setPrivacy] = useState<string>("everyone");
