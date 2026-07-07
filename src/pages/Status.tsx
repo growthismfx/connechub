@@ -294,15 +294,19 @@ export default function Status() {
   const storyAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Play attached music while viewing (any story type)
+    // Play attached music while viewing (any story type), honoring start + duration
     if (storyAudioRef.current) { storyAudioRef.current.pause(); storyAudioRef.current = null; }
     if (!current?.music_url) return;
+    const start = Number(current.music_start_seconds || 0);
+    const dur = Number(current.music_duration_seconds || 15);
     const a = new Audio(current.music_url);
     a.crossOrigin = "anonymous";
-    a.currentTime = Number(current.music_start_seconds || 0);
+    a.currentTime = start;
     a.play().catch(() => {});
+    const onTime = () => { if (a.currentTime >= start + dur) { a.currentTime = start; } };
+    a.addEventListener("timeupdate", onTime);
     storyAudioRef.current = a;
-    return () => { a.pause(); };
+    return () => { a.pause(); a.removeEventListener("timeupdate", onTime); };
   }, [current?.id, current?.music_url]);
 
   useEffect(() => {
