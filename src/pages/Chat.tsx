@@ -41,6 +41,7 @@ export default function Chat() {
   const [reactions, setReactions] = useState<Record<string, { emoji: string; count: number; mine: boolean }[]>>({});
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
   const longPressRef = useRef<number | null>(null);
+  const [mediaViewer, setMediaViewer] = useState<{ type: "image" | "video"; url: string } | null>(null);
 
   // Load my starred ids
   useEffect(() => {
