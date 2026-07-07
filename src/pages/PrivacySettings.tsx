@@ -18,6 +18,9 @@ export default function PrivacySettings() {
   const [showPhoto, setShowPhoto] = useState(true);
   const [showStatus, setShowStatus] = useState(true);
   const [blocked, setBlocked] = useState<any[]>([]);
+  const [closeFriends, setCloseFriends] = useState<any[]>([]);
+  const [cfSearch, setCfSearch] = useState("");
+  const [cfResults, setCfResults] = useState<any[]>([]);
 
   useEffect(() => {
     if (!profile) return;
