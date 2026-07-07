@@ -169,7 +169,7 @@ export default function Status() {
     setPollOptions(["Yes", "No"]); setQuizCorrect(0);
     setCountdownEnd(""); setCountdownTitle("");
     setLinkUrl(""); setLinkTitle("");
-    setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMuteOriginal(false);
+    setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMusicClip(15); setMuteOriginal(false);
     setLocationName("");
   };
 
