@@ -261,6 +261,7 @@ export default function Status() {
         base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
         base.music_thumbnail = musicThumb || null;
         base.music_start_seconds = musicStart;
+        base.music_duration_seconds = musicClip;
         base.media_url = media_url; base.media_type = media_type;
       }
       // Music attachment on photo/video/text stories
@@ -268,6 +269,7 @@ export default function Status() {
         base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
         base.music_thumbnail = musicThumb || null;
         base.music_start_seconds = musicStart;
+        base.music_duration_seconds = musicClip;
         if (composerType === "video") base.mute_original = muteOriginal;
       }
       if (composerType === "location") base.location = { name: locationName };
