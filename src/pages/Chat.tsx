@@ -41,6 +41,7 @@ export default function Chat() {
   const [reactions, setReactions] = useState<Record<string, { emoji: string; count: number; mine: boolean }[]>>({});
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
   const longPressRef = useRef<number | null>(null);
+  const [mediaViewer, setMediaViewer] = useState<{ type: "image" | "video"; url: string } | null>(null);
 
   // Load my starred ids
   useEffect(() => {
@@ -448,11 +449,15 @@ export default function Chat() {
                       <span>{m.content}</span>
                     </p>
                   ) : m.message_type === "image" && m.media_url ? (
-                    <img src={m.media_url} alt="" className="rounded-2xl max-w-full" />
+                    <button type="button" onClick={() => setMediaViewer({ type: "image", url: m.media_url })} className="block">
+                      <img src={m.media_url} alt="" className="rounded-2xl max-w-full cursor-zoom-in" />
+                    </button>
                   ) : m.message_type === "video" && m.media_url ? (
-                    <video src={m.media_url} controls className="rounded-2xl max-w-full" />
+                    <button type="button" onClick={() => setMediaViewer({ type: "video", url: m.media_url })} className="block w-full">
+                      <video src={m.media_url} className="rounded-2xl max-w-full cursor-zoom-in" />
+                    </button>
                   ) : m.message_type === "audio" && m.media_url ? (
-                    <audio src={m.media_url} controls />
+                    <audio src={m.media_url} controls className="w-full" />
                   ) : m.message_type === "file" && m.media_url ? (
                     <a href={m.media_url} target="_blank" rel="noreferrer" className="underline">{m.content}</a>
                   ) : (
@@ -553,6 +558,37 @@ export default function Chat() {
         onDeleted={() => {}}
         onStarToggle={() => { if (actionTarget) toggleStar(actionTarget.id); }}
       />
+      {mediaViewer && (
+        <div
+          className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center animate-fade-in"
+          onClick={() => setMediaViewer(null)}
+        >
+          <button
+            aria-label="Close"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center backdrop-blur"
+            onClick={(e) => { e.stopPropagation(); setMediaViewer(null); }}
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {mediaViewer.type === "image" ? (
+            <img
+              src={mediaViewer.url}
+              alt=""
+              className="max-w-[95vw] max-h-[95vh] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <video
+              src={mediaViewer.url}
+              controls
+              autoPlay
+              playsInline
+              className="max-w-[95vw] max-h-[95vh]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+        </div>
+      )}
       </div>
     </div>
   );

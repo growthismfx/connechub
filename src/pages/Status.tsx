@@ -85,6 +85,7 @@ export default function Status() {
   const [musicThumb, setMusicThumb] = useState("");
   const [musicPickerOpen, setMusicPickerOpen] = useState(false);
   const [musicStart, setMusicStart] = useState(0);
+  const [musicClip, setMusicClip] = useState(15);
   const [muteOriginal, setMuteOriginal] = useState(false);
   const [locationName, setLocationName] = useState("");
   const [privacy, setPrivacy] = useState<string>("everyone");
@@ -168,7 +169,7 @@ export default function Status() {
     setPollOptions(["Yes", "No"]); setQuizCorrect(0);
     setCountdownEnd(""); setCountdownTitle("");
     setLinkUrl(""); setLinkTitle("");
-    setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMuteOriginal(false);
+    setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMusicClip(15); setMuteOriginal(false);
     setLocationName("");
   };
 
@@ -260,6 +261,7 @@ export default function Status() {
         base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
         base.music_thumbnail = musicThumb || null;
         base.music_start_seconds = musicStart;
+        base.music_duration_seconds = musicClip;
         base.media_url = media_url; base.media_type = media_type;
       }
       // Music attachment on photo/video/text stories
@@ -267,6 +269,7 @@ export default function Status() {
         base.music_url = musicUrl; base.music_title = musicTitle; base.music_artist = musicArtist;
         base.music_thumbnail = musicThumb || null;
         base.music_start_seconds = musicStart;
+        base.music_duration_seconds = musicClip;
         if (composerType === "video") base.mute_original = muteOriginal;
       }
       if (composerType === "location") base.location = { name: locationName };
@@ -291,15 +294,19 @@ export default function Status() {
   const storyAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Play attached music while viewing (any story type)
+    // Play attached music while viewing (any story type), honoring start + duration
     if (storyAudioRef.current) { storyAudioRef.current.pause(); storyAudioRef.current = null; }
     if (!current?.music_url) return;
+    const start = Number(current.music_start_seconds || 0);
+    const dur = Number(current.music_duration_seconds || 15);
     const a = new Audio(current.music_url);
     a.crossOrigin = "anonymous";
-    a.currentTime = Number(current.music_start_seconds || 0);
+    a.currentTime = start;
     a.play().catch(() => {});
+    const onTime = () => { if (a.currentTime >= start + dur) { a.currentTime = start; } };
+    a.addEventListener("timeupdate", onTime);
     storyAudioRef.current = a;
-    return () => { a.pause(); };
+    return () => { a.pause(); a.removeEventListener("timeupdate", onTime); };
   }, [current?.id, current?.music_url]);
 
   useEffect(() => {
@@ -472,7 +479,8 @@ export default function Status() {
               <MusicTrimmer
                 previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
                 startSeconds={musicStart} onStartChange={setMusicStart}
-                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+                clipSeconds={musicClip} onClipChange={setMusicClip}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMusicClip(15); }}
               />
             ) : (
               <Button onClick={() => setMusicPickerOpen(true)} className="w-full rounded-full h-11" variant="outline">
@@ -489,7 +497,8 @@ export default function Status() {
               <MusicTrimmer
                 previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
                 startSeconds={musicStart} onStartChange={setMusicStart}
-                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+                clipSeconds={musicClip} onClipChange={setMusicClip}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMusicClip(15); }}
               />
             ) : (
               <button onClick={() => setMusicPickerOpen(true)}
