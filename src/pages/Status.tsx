@@ -473,7 +473,8 @@ export default function Status() {
               <MusicTrimmer
                 previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
                 startSeconds={musicStart} onStartChange={setMusicStart}
-                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+                clipSeconds={musicClip} onClipChange={setMusicClip}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMusicClip(15); }}
               />
             ) : (
               <Button onClick={() => setMusicPickerOpen(true)} className="w-full rounded-full h-11" variant="outline">
@@ -490,7 +491,8 @@ export default function Status() {
               <MusicTrimmer
                 previewUrl={musicUrl} title={musicTitle} artist={musicArtist} artworkUrl={musicThumb}
                 startSeconds={musicStart} onStartChange={setMusicStart}
-                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); }}
+                clipSeconds={musicClip} onClipChange={setMusicClip}
+                onRemove={() => { setMusicTitle(""); setMusicArtist(""); setMusicUrl(""); setMusicThumb(""); setMusicStart(0); setMusicClip(15); }}
               />
             ) : (
               <button onClick={() => setMusicPickerOpen(true)}
