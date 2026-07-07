@@ -39,7 +39,46 @@ export default function PrivacySettings() {
     setBlocked(profs || []);
   };
 
-  useEffect(() => { loadBlocked(); }, [user?.id]);
+  useEffect(() => { loadBlocked(); loadCloseFriends(); }, [user?.id]);
+
+  const loadCloseFriends = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("close_friends").select("friend_id").eq("user_id", user.id);
+    const ids = (data || []).map((r: any) => r.friend_id);
+    if (!ids.length) return setCloseFriends([]);
+    const { data: profs } = await supabase.from("profiles").select("id, name, username, avatar_url").in("id", ids);
+    setCloseFriends(profs || []);
+  };
+
+  useEffect(() => {
+    if (!cfSearch.trim() || !user) { setCfResults([]); return; }
+    const t = setTimeout(async () => {
+      const q = cfSearch.trim();
+      const { data } = await supabase.from("profiles")
+        .select("id, name, username, avatar_url")
+        .or(`username.ilike.%${q}%,name.ilike.%${q}%`)
+        .neq("id", user.id)
+        .limit(8);
+      const existing = new Set(closeFriends.map((c) => c.id));
+      setCfResults((data || []).filter((p: any) => !existing.has(p.id)));
+    }, 250);
+    return () => clearTimeout(t);
+  }, [cfSearch, user?.id, closeFriends]);
+
+  const addCloseFriend = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("close_friends").insert({ user_id: user.id, friend_id: id });
+    if (error) return toast.error(error.message);
+    setCfSearch(""); setCfResults([]);
+    toast.success("Added to Close Friends"); loadCloseFriends();
+  };
+
+  const removeCloseFriend = async (id: string) => {
+    if (!user) return;
+    await supabase.from("close_friends").delete().eq("user_id", user.id).eq("friend_id", id);
+    toast.success("Removed"); loadCloseFriends();
+  };
+
 
   const update = async (patch: any) => {
     if (!user) return;
