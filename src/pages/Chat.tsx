@@ -8,7 +8,7 @@ import { ArrowLeft, Mic, Paperclip, Send, Phone, Video, Check, CheckCheck, Phone
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import ProfileSheet from "@/components/ProfileSheet";
-import { encryptForRecipients, decryptMessage } from "@/lib/e2ee";
+import { decryptMessage } from "@/lib/e2ee";
 import MessageActionSheet, { MessageActionTarget } from "@/components/MessageActionSheet";
 import { Pin as PinIcon, X } from "lucide-react";
 
@@ -129,7 +129,7 @@ export default function Chat() {
   const decryptIfNeeded = async (m: any) => {
     if (!m?.is_encrypted || !user) return m;
     const pt = await decryptMessage(user.id, m.content, m.iv, m.encrypted_keys || {});
-    return { ...m, content: pt ?? "🔒 [unable to decrypt]" };
+    return { ...m, content: pt ?? "Message unavailable on this device" };
   };
 
   // Load messages + realtime updates
@@ -273,12 +273,10 @@ export default function Chat() {
       return;
     }
 
-    // E2EE encrypt for all participants
-    const recipients = participantIds.length ? participantIds : [user.id];
-    const enc = await encryptForRecipients(content, recipients);
-    const payload: any = enc
-      ? { conversation_id: id, sender_id: user.id, content: enc.ciphertext, iv: enc.iv, encrypted_keys: enc.encrypted_keys, is_encrypted: true }
-      : { conversation_id: id, sender_id: user.id, content };
+    // Messages are stored in plaintext so they stay readable on every device
+    // and chat previews never show ciphertext.
+    const payload: any = { conversation_id: id, sender_id: user.id, content };
+
     if (replyTo?.id) payload.reply_to = replyTo.id;
     const { error } = await supabase.from("messages").insert(payload);
     if (error) toast.error(error.message);
