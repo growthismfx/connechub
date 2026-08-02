@@ -88,12 +88,13 @@ export default function CallScreen() {
     <div className="min-h-screen bg-foreground text-background relative overflow-hidden">
       {isVideo && (
         <>
-          <video ref={remoteVideoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover bg-black" />
-          <video ref={localVideoRef} autoPlay playsInline muted className="absolute top-6 right-6 w-32 h-44 rounded-2xl object-cover border border-white/20 shadow-2xl bg-black z-10" />
+          <video ref={attachRemote} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover bg-black" />
+          <video ref={attachLocal} autoPlay playsInline muted className="absolute top-6 right-6 w-32 h-44 rounded-2xl object-cover border border-white/20 shadow-2xl bg-black z-10" />
         </>
       )}
 
-      <audio ref={remoteAudioRef} autoPlay />
+      <audio ref={attachRemoteAudio} autoPlay />
+
 
       {/* Minimize bar */}
       <button
