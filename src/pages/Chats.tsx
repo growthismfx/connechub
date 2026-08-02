@@ -12,6 +12,15 @@ import { formatDistanceToNow } from "date-fns";
 const BASE_TABS = ["All", "Unread", "Groups", "Channels"] as const;
 type Tab = string;
 
+// Older messages were stored encrypted; never show raw ciphertext in previews.
+const looksLikeCiphertext = (s: string) =>
+  s.length > 40 && !s.includes(" ") && /^[A-Za-z0-9+/=]+$/.test(s);
+
+const previewText = (s?: string | null) => {
+  if (!s) return "Say hi 👋";
+  return looksLikeCiphertext(s) ? "🔒 Encrypted message" : s;
+};
+
 export default function Chats() {
   const { user, profile } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
