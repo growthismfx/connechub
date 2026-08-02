@@ -273,12 +273,10 @@ export default function Chat() {
       return;
     }
 
-    // E2EE encrypt for all participants
-    const recipients = participantIds.length ? participantIds : [user.id];
-    const enc = await encryptForRecipients(content, recipients);
-    const payload: any = enc
-      ? { conversation_id: id, sender_id: user.id, content: enc.ciphertext, iv: enc.iv, encrypted_keys: enc.encrypted_keys, is_encrypted: true }
-      : { conversation_id: id, sender_id: user.id, content };
+    // Messages are stored in plaintext so they stay readable on every device
+    // and chat previews never show ciphertext.
+    const payload: any = { conversation_id: id, sender_id: user.id, content };
+
     if (replyTo?.id) payload.reply_to = replyTo.id;
     const { error } = await supabase.from("messages").insert(payload);
     if (error) toast.error(error.message);
