@@ -129,7 +129,7 @@ export default function Chat() {
   const decryptIfNeeded = async (m: any) => {
     if (!m?.is_encrypted || !user) return m;
     const pt = await decryptMessage(user.id, m.content, m.iv, m.encrypted_keys || {});
-    return { ...m, content: pt ?? "🔒 [unable to decrypt]" };
+    return { ...m, content: pt ?? "Message unavailable on this device" };
   };
 
   // Load messages + realtime updates
