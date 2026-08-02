@@ -319,7 +319,7 @@ export default function Chats() {
             </div>
             <div className="flex-1 text-left min-w-0">
               <p className="font-semibold truncate text-[15px]">{r.other.name}</p>
-              <p className="text-[13px] text-muted-foreground truncate">{r.last_message || "Say hi 👋"}</p>
+              <p className="text-[13px] text-muted-foreground truncate">{previewText(r.last_message)}</p>
             </div>
             <div className="text-right shrink-0 flex flex-col items-end gap-1">
               <p className="text-[11px] text-muted-foreground">
