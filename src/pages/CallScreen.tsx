@@ -27,14 +27,39 @@ export default function CallScreen() {
     startCall(callId, role);
   }, [callId, role, startCall]);
 
-  // Wire streams to media elements
+  // Callback refs: video elements mount only after the call type is known,
+  // so attach the stream the moment the element appears (and on stream change).
+  const attachLocal = (el: HTMLVideoElement | null) => {
+    localVideoRef.current = el;
+    if (el && el.srcObject !== localStream) el.srcObject = localStream;
+  };
+  const attachRemote = (el: HTMLVideoElement | null) => {
+    remoteVideoRef.current = el;
+    if (el && el.srcObject !== remoteStream) el.srcObject = remoteStream;
+  };
+  const attachRemoteAudio = (el: HTMLAudioElement | null) => {
+    remoteAudioRef.current = el;
+    if (el && el.srcObject !== remoteStream) el.srcObject = remoteStream;
+  };
+
   useEffect(() => {
-    if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
-  }, [localStream]);
+    if (localVideoRef.current && localVideoRef.current.srcObject !== localStream) {
+      localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.play?.().catch(() => {});
+    }
+  }, [localStream, call?.call_type]);
+
   useEffect(() => {
-    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
-    if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream;
-  }, [remoteStream]);
+    if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.play?.().catch(() => {});
+    }
+    if (remoteAudioRef.current && remoteAudioRef.current.srcObject !== remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream;
+      remoteAudioRef.current.play?.().catch(() => {});
+    }
+  }, [remoteStream, status, call?.call_type]);
+
 
   // When call ends, leave the screen
   useEffect(() => {
