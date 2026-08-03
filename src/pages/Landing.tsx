@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import hellowIcon from "@/assets/hellow-icon.png.asset.json";
 import glassArt from "@/assets/landing-glass.png";
+import person from "@/assets/landing-person.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
