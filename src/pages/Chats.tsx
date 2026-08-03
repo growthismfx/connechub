@@ -195,180 +195,161 @@ export default function Chats() {
 
 
   return (
-    <div className="min-h-screen pb-32 relative">
-      {/* soft ambient gradient backdrop */}
+    <div className="min-h-screen pb-36 relative">
+      {/* reference gradient backdrop: cool blue -> white -> soft blush */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(120% 60% at 100% 0%, hsl(var(--primary) / 0.10), transparent 60%), radial-gradient(100% 60% at 0% 100%, hsl(330 100% 92% / 0.55), transparent 65%), hsl(var(--background))",
+            "linear-gradient(175deg, hsl(206 96% 90%) 0%, hsl(205 100% 96%) 22%, hsl(0 0% 100%) 52%, hsl(340 70% 97%) 100%)",
         }}
       />
 
       {/* Header */}
-      <div className="px-5 pt-12 pb-4 flex items-center justify-between animate-fade-in">
-        <h1 className="text-[32px] font-bold tracking-tight leading-none">Chat</h1>
-        <div className="flex items-center gap-2">
+      <div className="px-6 pt-12 pb-5 flex items-center justify-between">
+        <h1 className="text-[30px] font-bold tracking-tight">Chat</h1>
+        <div className="flex items-center gap-2.5">
           <button
-            onClick={() => document.getElementById("chat-search")?.focus()}
+            onClick={() => setSearchOpen((v) => !v)}
             aria-label="Search"
-            className="w-11 h-11 rounded-full flex items-center justify-center bg-background/80 backdrop-blur border border-border/50 shadow-[var(--shadow-pill)] active:scale-95 transition-transform"
+            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_6px_18px_-8px_rgba(30,60,120,0.45)] active:scale-95 transition-transform"
           >
-            <Search className="w-[18px] h-[18px]" />
+            <Search className="w-[18px] h-[18px] text-foreground" />
           </button>
           <button
-            onClick={() => nav("/settings")}
-            aria-label="Menu"
-            className="w-11 h-11 rounded-full flex items-center justify-center bg-background/80 backdrop-blur border border-border/50 shadow-[var(--shadow-pill)] active:scale-95 transition-transform"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="More"
+            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_6px_18px_-8px_rgba(30,60,120,0.45)] active:scale-95 transition-transform"
           >
-            <MoreHorizontal className="w-[18px] h-[18px]" />
+            <MoreHorizontal className="w-[18px] h-[18px] text-foreground" />
           </button>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="px-5 mb-4">
-        <div className="flex items-center gap-3 bg-background/80 backdrop-blur rounded-full px-5 h-12 shadow-[var(--shadow-pill)] border border-border/40">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <input
-            id="chat-search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search anything"
-            className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-          />
+      {searchOpen && (
+        <div className="px-6 pb-4 animate-fade-in">
+          <div className="flex items-center gap-3 bg-white rounded-full px-5 h-11 shadow-[0_6px_18px_-10px_rgba(30,60,120,0.5)]">
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <input
+              autoFocus
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search"
+              className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+            />
+          </div>
+        </div>
+      )}
+
+      {menuOpen && (
+        <div className="px-6 pb-4 animate-fade-in">
+          <div className="bg-white rounded-3xl p-2 shadow-[0_10px_30px_-14px_rgba(30,60,120,0.6)] flex flex-col">
+            {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
+              const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
+              return (
+                <button
+                  key={key}
+                  onClick={() => { setTab(key); setMenuOpen(false); }}
+                  className={`text-left text-sm px-4 py-2.5 rounded-2xl ${tab === key ? "bg-muted font-semibold" : ""}`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+            <button onClick={() => { setMenuOpen(false); createFolder(); }} className="text-left text-sm px-4 py-2.5 rounded-2xl text-muted-foreground">
+              + New folder
+            </button>
+            <button onClick={() => { setMenuOpen(false); nav("/settings"); }} className="text-left text-sm px-4 py-2.5 rounded-2xl text-muted-foreground">
+              Settings
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Stories row */}
+      <div className="pl-6 pb-1 overflow-x-auto no-scrollbar">
+        <div className="flex gap-4 pr-6">
+          <button onClick={() => nav("/status")} className="flex flex-col items-center gap-2 shrink-0">
+            <div className="relative">
+              <Avatar className="w-[58px] h-[58px] border-[3px] border-white shadow-[0_8px_18px_-10px_rgba(30,60,120,0.7)]">
+                <AvatarImage src={profile?.avatar_url || undefined} />
+                <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
+              </Avatar>
+              <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white text-white" style={{ background: "var(--gradient-cta)" }}>
+                <Plus className="w-3 h-3" />
+              </span>
+            </div>
+            <span className="text-[12px] text-foreground/80">You</span>
+          </button>
+          {stories.map((s) => (
+            <button key={s.id} onClick={() => nav("/status")} className="flex flex-col items-center gap-2 shrink-0">
+              <Avatar className="w-[58px] h-[58px] border-[3px] border-white shadow-[0_8px_18px_-10px_rgba(30,60,120,0.7)]">
+                <AvatarImage src={s.avatar_url || undefined} />
+                <AvatarFallback>{s.name?.[0]}</AvatarFallback>
+              </Avatar>
+              <span className="text-[12px] text-foreground/80 truncate max-w-[64px]">{s.name?.split(" ")[0]}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Notes */}
       <NotesStrip />
 
-      {/* Stories */}
-      <div className="px-5 mb-5 overflow-x-auto no-scrollbar">
-        <div className="flex gap-4 pb-1">
-          <button
-            onClick={() => nav("/status")}
-            className="flex flex-col items-center gap-2 shrink-0 animate-fade-in"
-          >
-            <div className="relative">
-              <Avatar className="w-[62px] h-[62px] ring-2 ring-background shadow-[var(--shadow-bubble)]">
-                <AvatarImage src={profile?.avatar_url || undefined} />
-                <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
-              </Avatar>
-              <div
-                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-primary-foreground border-2 border-background"
-                style={{ background: "var(--gradient-cta)" }}
-              >
-                <Plus className="w-3 h-3" />
-              </div>
-            </div>
-            <span className="text-[11px] font-medium text-muted-foreground">You</span>
+      {/* Messages */}
+      <p className="px-6 pt-4 pb-1 text-[15px] font-semibold">Messages</p>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground text-sm">No chats here yet</p>
+          <button onClick={() => nav("/discover")} className="mt-2 text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>
+            Find someone to message
           </button>
-          {stories.map((s) => (
+        </div>
+      )}
+
+      <div className="px-4">
+        {filtered.map((r) => {
+          const unread = unreadMap[r.id] || 0;
+          return (
             <button
-              key={s.id}
-              onClick={() => nav("/status")}
-              className="flex flex-col items-center gap-2 shrink-0"
+              key={r.id}
+              onClick={() => nav(`/chat/${r.id}`)}
+              className="w-full flex items-center gap-3.5 px-2 py-3 rounded-2xl active:bg-white/70 transition-colors"
             >
-              <div className="status-ring-unseen">
-                <Avatar className="w-[56px] h-[56px] border-2 border-background">
-                  <AvatarImage src={s.avatar_url || undefined} />
-                  <AvatarFallback>{s.name?.[0]}</AvatarFallback>
+              <div className="relative shrink-0">
+                <Avatar className="w-[46px] h-[46px]">
+                  <AvatarImage src={r.other.avatar_url || undefined} />
+                  <AvatarFallback>{r.other.name?.[0]}</AvatarFallback>
                 </Avatar>
+                {r.other.is_online && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white" style={{ background: "hsl(var(--online))" }} />
+                )}
               </div>
-              <span className="text-[11px] font-medium truncate max-w-[66px] text-muted-foreground">{s.name?.split(" ")[0]}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="px-5 mb-4 overflow-x-auto no-scrollbar">
-        <div className="flex gap-2 items-center">
-          {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
-            const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
-            const active = tab === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className="px-4 h-8 rounded-full text-sm font-medium transition-all active:scale-95 whitespace-nowrap"
-                style={{
-                  background: active ? "var(--gradient-cta)" : "hsl(var(--muted))",
-                  color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
-                  boxShadow: active ? "var(--shadow-pill)" : "none",
-                }}
-              >
-                {label}
-              </button>
-            );
-          })}
-          <button
-            onClick={createFolder}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground border border-dashed border-border shrink-0 active:scale-95"
-            aria-label="Add folder"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* List */}
-      <div className="px-5">
-        <p className="text-[15px] font-semibold mb-1">Messages</p>
-        {filtered.length === 0 && (
-          <div className="text-center py-16 animate-fade-in">
-            <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--gradient-card)" }}>
-              <Plus className="w-8 h-8" style={{ color: "hsl(var(--primary))" }} />
-            </div>
-            <p className="text-muted-foreground">{tab === "Channels" ? "No channels yet" : "No chats here"}</p>
-            <button onClick={() => nav("/discover")} className="mt-3 text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>Find someone to message</button>
-          </div>
-        )}
-        <div className="flex flex-col">
-          {filtered.map((r, idx) => {
-            const unread = unreadMap[r.id] || 0;
-            return (
-              <button
-                key={r.id}
-                onClick={() => nav(`/chat/${r.id}`)}
-                className="w-full flex items-center gap-3.5 px-3 py-3 rounded-3xl hover:bg-background/70 active:scale-[0.99] transition-all animate-fade-in"
-                style={{ animationDelay: `${idx * 30}ms` }}
-              >
-                <div className="relative shrink-0">
-                  <Avatar className="w-[54px] h-[54px] ring-2 ring-background shadow-[var(--shadow-bubble)]">
-                    <AvatarImage src={r.other.avatar_url || undefined} />
-                    <AvatarFallback>{r.other.name?.[0]}</AvatarFallback>
-                  </Avatar>
-                  {r.other.is_online && (
-                    <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full border-2 border-background" style={{ background: "hsl(var(--online))" }} />
+              <div className="flex-1 text-left min-w-0">
+                <p className="font-semibold text-[15px] truncate leading-tight">{r.other.name}</p>
+                <p className={`text-[13px] truncate mt-0.5 ${unread > 0 ? "text-foreground/80" : "text-muted-foreground"}`}>
+                  {previewText(r.last_message)}
+                </p>
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                <span className="text-[11px] text-muted-foreground">
+                  {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
+                </span>
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  {r.muted && <BellOff className="w-3 h-3" />}
+                  {r.pinned && <Pin className="w-3 h-3 fill-current" />}
+                  {unread > 0 && (
+                    <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                      {unread > 99 ? "99+" : unread}
+                    </span>
                   )}
-                </div>
-                <div className="flex-1 text-left min-w-0">
-                  <p className="font-semibold truncate text-[15px]">{r.other.name}</p>
-                  <p className={`text-[13px] truncate ${unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                    {previewText(r.last_message)}
-                  </p>
-                </div>
-                <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-                  <p className="text-[11px] text-muted-foreground">
-                    {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
-                  </p>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    {r.muted && <BellOff className="w-3 h-3" />}
-                    {r.pinned && <Pin className="w-3 h-3 fill-current" />}
-                    {unread > 0 && (
-                      <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold flex items-center justify-center">
-                        {unread > 99 ? "99+" : unread}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <BottomNav />
