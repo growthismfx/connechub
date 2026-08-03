@@ -33,33 +33,26 @@ export default function BottomNav() {
   }, [activeIdx, loc.pathname]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 px-5 pb-4 pt-2 pointer-events-none">
-      <div className="relative max-w-md mx-auto pointer-events-auto">
-        {/* Center floating action */}
-        <button
-          onClick={() => nav("/chats")}
-          className="absolute left-1/2 -translate-x-1/2 -top-7 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_14px_30px_-8px_hsl(var(--primary)/0.65)] z-20 transition-transform active:scale-90 hover:scale-105 animate-scale-in"
-          style={{ background: "var(--gradient-cta)", backgroundSize: "200% 200%", animation: "gradient-shift 6s ease infinite, scale-in 0.3s ease-out" }}
-          aria-label="Chats"
-        >
-          <span className="absolute inset-0 rounded-full opacity-50 blur-xl" style={{ background: "var(--gradient-cta)" }} />
-          <MessageSquarePlus className="w-7 h-7 relative" />
-        </button>
-
+    <div className="fixed bottom-0 left-0 right-0 z-30 px-5 pb-5 pt-2 pointer-events-none">
+      <div className="relative w-fit max-w-full mx-auto pointer-events-auto">
         <div
           ref={containerRef}
-          className="relative flex items-center bg-white/85 backdrop-blur-2xl border border-white/40 rounded-[32px] shadow-[var(--shadow-pill)] px-2 py-2 overflow-hidden"
+          className="relative flex items-center gap-1 bg-white/90 backdrop-blur-2xl rounded-full shadow-[0_16px_38px_-16px_rgba(30,60,120,0.75)] px-2.5 py-2"
         >
-          {/* Water-drop blob indicator */}
-          <span
-            className="nav-waterdrop"
-            style={{
-              left: blob.left,
-              width: blob.width,
-            }}
-          />
           {items.map((i, idx) => {
-            if (i.path === "/__center") return <div key={idx} className="w-16 shrink-0" />;
+            if (i.path === "/__center") {
+              return (
+                <button
+                  key={idx}
+                  onClick={() => nav("/chats")}
+                  className="mx-1 flex items-center gap-2 rounded-full px-4 h-11 text-white font-semibold text-[13px] shadow-[0_10px_22px_-10px_hsl(var(--primary)/0.8)] active:scale-95 transition-transform"
+                  style={{ background: "var(--gradient-cta)" }}
+                >
+                  <MessageSquarePlus className="w-[18px] h-[18px]" />
+                  Message
+                </button>
+              );
+            }
             const Icon = i.icon!;
             const a = isActive(i.path);
             return (
@@ -67,25 +60,14 @@ export default function BottomNav() {
                 key={i.path}
                 ref={(el) => (itemRefs.current[idx] = el)}
                 onClick={() => nav(i.path)}
-                className="relative flex flex-col items-center gap-0.5 flex-1 py-2 transition-transform active:scale-95"
+                aria-label={i.label}
+                className="relative w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-95"
+                style={{ background: a ? "hsl(var(--muted))" : "transparent" }}
               >
                 <Icon
-                  className="w-[22px] h-[22px] transition-all duration-300"
-                  style={{
-                    color: a ? "white" : "hsl(var(--muted-foreground))",
-                    transform: a ? "translateY(-2px) scale(1.08)" : "none",
-                    filter: a ? "drop-shadow(0 4px 8px hsl(var(--primary) / 0.5))" : "none",
-                  }}
+                  className="w-[20px] h-[20px] transition-colors duration-300"
+                  style={{ color: a ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
                 />
-                <span
-                  className="text-[10px] font-semibold transition-all duration-300"
-                  style={{
-                    color: a ? "white" : "hsl(var(--muted-foreground))",
-                    opacity: a ? 1 : 0.85,
-                  }}
-                >
-                  {i.label}
-                </span>
               </button>
             );
           })}
