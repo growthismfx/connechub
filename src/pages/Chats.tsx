@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Plus, Pin, BellOff } from "lucide-react";
+import { Search, Plus, Pin, BellOff, MoreHorizontal } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
 import NotesStrip from "@/components/NotesStrip";
@@ -193,30 +193,44 @@ export default function Chats() {
 
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 relative">
+      {/* soft ambient gradient backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(120% 60% at 100% 0%, hsl(var(--primary) / 0.10), transparent 60%), radial-gradient(100% 60% at 0% 100%, hsl(330 100% 92% / 0.55), transparent 65%), hsl(var(--background))",
+        }}
+      />
+
       {/* Header */}
-      <div className="px-5 pt-12 pb-3 flex items-center justify-between animate-fade-in">
-        <button onClick={() => nav("/settings")} className="active:scale-95 transition-transform">
-          <Avatar className="w-10 h-10 ring-2 ring-white shadow-[var(--shadow-pill)]">
-            <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
-          </Avatar>
-        </button>
-        <h1 className="text-[26px] font-bold tracking-tight" style={{ color: "hsl(var(--primary))" }}>hellow</h1>
-        <button
-          onClick={() => nav("/discover")}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white active:scale-95 transition-transform shadow-[0_6px_16px_-4px_hsl(var(--primary)/0.5)]"
-          style={{ background: "var(--gradient-cta)" }}
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+      <div className="px-5 pt-12 pb-4 flex items-center justify-between animate-fade-in">
+        <h1 className="text-[32px] font-bold tracking-tight leading-none">Chat</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => document.getElementById("chat-search")?.focus()}
+            aria-label="Search"
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-background/80 backdrop-blur border border-border/50 shadow-[var(--shadow-pill)] active:scale-95 transition-transform"
+          >
+            <Search className="w-[18px] h-[18px]" />
+          </button>
+          <button
+            onClick={() => nav("/settings")}
+            aria-label="Menu"
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-background/80 backdrop-blur border border-border/50 shadow-[var(--shadow-pill)] active:scale-95 transition-transform"
+          >
+            <MoreHorizontal className="w-[18px] h-[18px]" />
+          </button>
+        </div>
       </div>
 
       {/* Search */}
       <div className="px-5 mb-4">
-        <div className="flex items-center gap-3 bg-white rounded-full px-5 h-12 shadow-[var(--shadow-pill)] border border-border/40">
+        <div className="flex items-center gap-3 bg-background/80 backdrop-blur rounded-full px-5 h-12 shadow-[var(--shadow-pill)] border border-border/40">
           <Search className="w-4 h-4 text-muted-foreground" />
           <input
+            id="chat-search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search anything"
@@ -229,46 +243,46 @@ export default function Chats() {
       <NotesStrip />
 
       {/* Stories */}
-      <div className="px-5 mb-3 overflow-x-auto no-scrollbar">
+      <div className="px-5 mb-5 overflow-x-auto no-scrollbar">
         <div className="flex gap-4 pb-1">
           <button
             onClick={() => nav("/status")}
-            className="flex flex-col items-center gap-1.5 shrink-0 animate-fade-in"
+            className="flex flex-col items-center gap-2 shrink-0 animate-fade-in"
           >
             <div className="relative">
-              <Avatar className="w-[60px] h-[60px]">
+              <Avatar className="w-[62px] h-[62px] ring-2 ring-background shadow-[var(--shadow-bubble)]">
                 <AvatarImage src={profile?.avatar_url || undefined} />
                 <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
               </Avatar>
               <div
-                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-white border-2 border-background"
+                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-primary-foreground border-2 border-background"
                 style={{ background: "var(--gradient-cta)" }}
               >
                 <Plus className="w-3 h-3" />
               </div>
             </div>
-            <span className="text-[11px] font-medium">My Story</span>
+            <span className="text-[11px] font-medium text-muted-foreground">You</span>
           </button>
           {stories.map((s) => (
             <button
               key={s.id}
               onClick={() => nav("/status")}
-              className="flex flex-col items-center gap-1.5 shrink-0"
+              className="flex flex-col items-center gap-2 shrink-0"
             >
               <div className="status-ring-unseen">
-                <Avatar className="w-[54px] h-[54px] border-2 border-background">
+                <Avatar className="w-[56px] h-[56px] border-2 border-background">
                   <AvatarImage src={s.avatar_url || undefined} />
                   <AvatarFallback>{s.name?.[0]}</AvatarFallback>
                 </Avatar>
               </div>
-              <span className="text-[11px] font-medium truncate max-w-[64px]">{s.name?.split(" ")[0]}</span>
+              <span className="text-[11px] font-medium truncate max-w-[66px] text-muted-foreground">{s.name?.split(" ")[0]}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="px-5 mb-3 overflow-x-auto no-scrollbar">
+      <div className="px-5 mb-4 overflow-x-auto no-scrollbar">
         <div className="flex gap-2 items-center">
           {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
             const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
@@ -280,7 +294,7 @@ export default function Chats() {
                 className="px-4 h-8 rounded-full text-sm font-medium transition-all active:scale-95 whitespace-nowrap"
                 style={{
                   background: active ? "var(--gradient-cta)" : "hsl(var(--muted))",
-                  color: active ? "white" : "hsl(var(--muted-foreground))",
+                  color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
                   boxShadow: active ? "var(--shadow-pill)" : "none",
                 }}
               >
@@ -298,9 +312,9 @@ export default function Chats() {
         </div>
       </div>
 
-
       {/* List */}
       <div className="px-5">
+        <p className="text-[15px] font-semibold mb-1">Messages</p>
         {filtered.length === 0 && (
           <div className="text-center py-16 animate-fade-in">
             <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--gradient-card)" }}>
@@ -310,42 +324,49 @@ export default function Chats() {
             <button onClick={() => nav("/discover")} className="mt-3 text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>Find someone to message</button>
           </div>
         )}
-        {filtered.map((r, idx) => (
-          <button
-            key={r.id}
-            onClick={() => nav(`/chat/${r.id}`)}
-            className="w-full flex items-center gap-3 py-3 active:scale-[0.99] transition-transform animate-fade-in"
-            style={{ animationDelay: `${idx * 30}ms` }}
-          >
-            <div className="relative">
-              <Avatar className="w-[52px] h-[52px]">
-                <AvatarImage src={r.other.avatar_url || undefined} />
-                <AvatarFallback>{r.other.name?.[0]}</AvatarFallback>
-              </Avatar>
-              {r.other.is_online && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background" style={{ background: "hsl(var(--online))" }} />
-              )}
-            </div>
-            <div className="flex-1 text-left min-w-0">
-              <p className="font-semibold truncate text-[15px]">{r.other.name}</p>
-              <p className="text-[13px] text-muted-foreground truncate">{previewText(r.last_message)}</p>
-            </div>
-            <div className="text-right shrink-0 flex flex-col items-end gap-1">
-              <p className="text-[11px] text-muted-foreground">
-                {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
-              </p>
-              <div className="flex items-center gap-1 text-muted-foreground">
-                {r.muted && <BellOff className="w-3 h-3" />}
-                {r.pinned && <Pin className="w-3 h-3 fill-current" />}
-                {(unreadMap[r.id] || 0) > 0 && (
-                  <span className="min-w-[20px] h-5 px-1.5 rounded-full text-white text-[11px] font-semibold flex items-center justify-center" style={{ background: "var(--gradient-cta)" }}>
-                    {unreadMap[r.id] > 99 ? "99+" : unreadMap[r.id]}
-                  </span>
-                )}
-              </div>
-            </div>
-          </button>
-        ))}
+        <div className="flex flex-col">
+          {filtered.map((r, idx) => {
+            const unread = unreadMap[r.id] || 0;
+            return (
+              <button
+                key={r.id}
+                onClick={() => nav(`/chat/${r.id}`)}
+                className="w-full flex items-center gap-3.5 px-3 py-3 rounded-3xl hover:bg-background/70 active:scale-[0.99] transition-all animate-fade-in"
+                style={{ animationDelay: `${idx * 30}ms` }}
+              >
+                <div className="relative shrink-0">
+                  <Avatar className="w-[54px] h-[54px] ring-2 ring-background shadow-[var(--shadow-bubble)]">
+                    <AvatarImage src={r.other.avatar_url || undefined} />
+                    <AvatarFallback>{r.other.name?.[0]}</AvatarFallback>
+                  </Avatar>
+                  {r.other.is_online && (
+                    <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full border-2 border-background" style={{ background: "hsl(var(--online))" }} />
+                  )}
+                </div>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="font-semibold truncate text-[15px]">{r.other.name}</p>
+                  <p className={`text-[13px] truncate ${unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                    {previewText(r.last_message)}
+                  </p>
+                </div>
+                <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
+                  <p className="text-[11px] text-muted-foreground">
+                    {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
+                  </p>
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    {r.muted && <BellOff className="w-3 h-3" />}
+                    {r.pinned && <Pin className="w-3 h-3 fill-current" />}
+                    {unread > 0 && (
+                      <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold flex items-center justify-center">
+                        {unread > 99 ? "99+" : unread}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <BottomNav />
