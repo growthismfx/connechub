@@ -7,7 +7,19 @@ import { Search, Plus, Pin, BellOff, MoreHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotesStrip from "@/components/NotesStrip";
 import BottomNav from "@/components/BottomNav";
+import AmbientBackdrop from "@/components/AmbientBackdrop";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
+
+const spring = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.7 };
+const storyVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.9 },
+  show: { opacity: 1, y: 0, scale: 1, transition: spring },
+};
+const rowVariants = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: spring },
+};
 
 const BASE_TABS = ["All", "Unread", "Groups", "Channels"] as const;
 type Tab = string;
