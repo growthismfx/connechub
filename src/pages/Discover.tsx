@@ -275,7 +275,12 @@ export default function Discover() {
 
       {/* Search results */}
       {q.trim() && (
-        <div className="px-5 mb-6 space-y-2">
+        <motion.div
+          className="px-5 mb-6 space-y-2"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04 } } }}
+        >
           <p className="text-[11px] text-muted-foreground px-3 flex items-center gap-1.5">
             {matchType === "phone" ? <Phone className="w-3 h-3" /> : <AtSign className="w-3 h-3" />}
             Searching by {matchType === "phone" ? "phone" : "username"}
@@ -284,10 +289,14 @@ export default function Discover() {
             <p className="text-center text-muted-foreground py-6 text-sm">No matches</p>
           )}
           {results.map((p) => (
-            <button
+            <motion.button
               key={p.id}
+              variants={cardVariants}
+              whileTap={{ scale: 0.985 }}
+              transition={spring}
               onClick={() => nav(`/chat/new/${p.id}?via=${matchType === "phone" ? "phone" : "username"}`)}
-              className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl shadow-[var(--shadow-soft)] active:scale-[0.99] transition-transform animate-fade-in"
+              className="w-full flex items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_12px_28px_-18px_rgba(30,60,120,0.8)]"
+              style={{ willChange: "transform" }}
             >
               <Avatar className="w-11 h-11">
                 <AvatarImage src={p.avatar_url || undefined} />
@@ -298,110 +307,192 @@ export default function Discover() {
                 <p className="text-xs text-muted-foreground truncate">@{p.username}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {!q.trim() && (
-        <>
-          {/* Groups */}
-          <div className="px-5 mb-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-[15px]">Your Groups</h3>
-              <button onClick={() => nav("/groups/new")} className="text-sm font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
-                <Plus className="w-3.5 h-3.5" /> New
-              </button>
-            </div>
-            {myGroups.length === 0 ? (
-              <button onClick={() => nav("/groups/new")} className="w-full flex items-center gap-3 p-4 bg-white rounded-2xl shadow-[var(--shadow-soft)] active:scale-[0.99] transition-transform">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white" style={{ background: "var(--gradient-cta)" }}>
-                  <UserPlus className="w-5 h-5" />
+        <motion.div initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}>
+          {/* Feature card */}
+          <motion.div variants={cardVariants} className="px-5 mb-6" style={{ willChange: "transform" }}>
+            <div className="relative rounded-[28px] p-5 pb-4 overflow-hidden text-white shadow-[0_26px_50px_-24px_rgba(30,60,120,0.9)]" style={{ background: "var(--gradient-cta)" }}>
+              <motion.div
+                aria-hidden
+                animate={{ scale: [1, 1.15, 1], opacity: [0.18, 0.3, 0.18] }}
+                transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -right-10 -bottom-14 w-48 h-48 rounded-full bg-white"
+              />
+              <motion.div
+                aria-hidden
+                animate={{ y: [0, -12, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute right-14 top-4 w-16 h-16 rounded-full bg-white/15"
+              />
+              <div className="relative">
+                <div className="flex items-center gap-2.5">
+                  <Avatar className="w-9 h-9 border-2 border-white/70">
+                    <AvatarImage src={(user as any)?.user_metadata?.avatar_url || undefined} />
+                    <AvatarFallback>{(user as any)?.email?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+                  </Avatar>
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-semibold">Your circle</p>
+                    <p className="text-[11px] text-white/75">Groups · Communities · Servers</p>
+                  </div>
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-sm">Create a new group</p>
-                  <p className="text-xs text-muted-foreground">Chat with friends, family or team</p>
+                <h2 className="mt-5 text-[22px] font-bold leading-tight max-w-[78%]">
+                  Explore &amp; chat with<br />people who match you
+                </h2>
+                <div className="mt-6 flex items-center gap-2.5">
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="flex-1 h-11 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-left px-4 text-[13px] text-white/85"
+                  >
+                    Type message...
+                  </button>
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    transition={spring}
+                    onClick={() => setCreateOpen(true)}
+                    className="w-11 h-11 rounded-full bg-white flex items-center justify-center"
+                    style={{ color: "hsl(var(--primary))" }}
+                    aria-label="Create community"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Groups */}
+          {(filter === "For You" || filter === "Groups") && (
+            <div className="px-5 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-[15px]">Your Groups</h3>
+                <button onClick={() => nav("/groups/new")} className="text-sm font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
+                  <Plus className="w-3.5 h-3.5" /> New
+                </button>
+              </div>
+              {myGroups.length === 0 ? (
+                <motion.button
+                  variants={cardVariants}
+                  whileTap={{ scale: 0.985 }}
+                  transition={spring}
+                  onClick={() => nav("/groups/new")}
+                  className="w-full flex items-center gap-3 p-4 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_12px_28px_-18px_rgba(30,60,120,0.8)]"
+                >
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white" style={{ background: "var(--gradient-cta)" }}>
+                    <UserPlus className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-semibold text-sm">Create a new group</p>
+                    <p className="text-xs text-muted-foreground">Chat with friends, family or team</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </motion.button>
+              ) : (
+                <div className="space-y-2">
+                  {myGroups.map((g) => (
+                    <motion.button
+                      key={g.id}
+                      variants={cardVariants}
+                      whileTap={{ scale: 0.985 }}
+                      transition={spring}
+                      onClick={() => nav(`/chat/${g.id}`)}
+                      className="w-full flex items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_12px_28px_-18px_rgba(30,60,120,0.8)]"
+                      style={{ willChange: "transform" }}
+                    >
+                      <Avatar className="w-11 h-11">
+                        <AvatarImage src={g.avatar_url || undefined} />
+                        <AvatarFallback><Users className="w-5 h-5" /></AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="font-semibold text-sm truncate">{g.name || "Group"}</p>
+                        <p className="text-xs text-muted-foreground truncate">{g.last_message || "Tap to chat"}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Voice / servers */}
+          {(filter === "For You" || filter === "Voice") && (
+            <motion.div variants={cardVariants} className="px-5 mb-6">
+              <button onClick={() => nav("/servers")} className="w-full rounded-2xl p-4 bg-white/90 backdrop-blur-xl shadow-[0_12px_28px_-18px_rgba(30,60,120,0.8)] flex items-center gap-3 text-left">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">#</div>
+                <div className="flex-1">
+                  <div className="font-semibold text-sm">Servers &amp; voice rooms</div>
+                  <div className="text-xs text-muted-foreground">Channels, voice and live hangouts</div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </button>
-            ) : (
-              <div className="space-y-2">
-                {myGroups.map((g, i) => (
-                  <button
-                    key={g.id}
-                    onClick={() => nav(`/chat/${g.id}`)}
-                    className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl shadow-[var(--shadow-soft)] active:scale-[0.99] transition-transform animate-fade-in"
-                    style={{ animationDelay: `${i * 30}ms` }}
-                  >
-                    <Avatar className="w-11 h-11">
-                      <AvatarImage src={g.avatar_url || undefined} />
-                      <AvatarFallback><Users className="w-5 h-5" /></AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="font-semibold text-sm truncate">{g.name || "Group"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{g.last_message || "Tap to chat"}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            </motion.div>
+          )}
 
           {/* Communities */}
-          <div className="px-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-[15px]">Communities</h3>
-              <button onClick={() => setCreateOpen(true)} className="text-sm font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
-                <Plus className="w-3.5 h-3.5" /> Create
-              </button>
-            </div>
-            {communities.length === 0 && (
-              <div className="text-center py-10 bg-white rounded-2xl shadow-[var(--shadow-soft)]">
-                <Globe className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">No communities yet</p>
-                <button onClick={() => setCreateOpen(true)} className="mt-2 text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>Be the first to create one</button>
+          {(filter === "For You" || filter === "Featured") && (
+            <div className="px-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-[15px]">Communities</h3>
+                <button onClick={() => setCreateOpen(true)} className="text-sm font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
+                  <Plus className="w-3.5 h-3.5" /> Create
+                </button>
               </div>
-            )}
-            <div className="space-y-2">
-              {communities.map((c, i) => {
-                const joined = joinedIds.has(c.id);
-                const g = GRADIENTS[i % GRADIENTS.length];
-                return (
-                  <div
-                    key={c.id}
-                    onClick={() => nav(`/community/${c.id}`)}
-                    className="w-full flex items-center gap-3 p-3 bg-white rounded-2xl shadow-[var(--shadow-soft)] animate-fade-in cursor-pointer active:scale-[0.99] transition-transform"
-                    style={{ animationDelay: `${i * 30}ms` }}
-                  >
-                    {c.avatar_url ? (
-                      <Avatar className="w-11 h-11 rounded-xl"><AvatarImage src={c.avatar_url} /><AvatarFallback>{c.name?.[0]}</AvatarFallback></Avatar>
-                    ) : (
-                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${g} flex items-center justify-center shrink-0`}>
-                        <Users className="w-5 h-5 text-white" />
-                      </div>
-                    )}
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="font-semibold text-sm truncate">{c.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{formatMembers(c.member_count)}</p>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleJoin(c); }}
-                      className="px-3.5 h-8 rounded-full text-xs font-semibold transition-all active:scale-95"
-                      style={{
-                        background: joined ? "hsl(var(--muted))" : "var(--gradient-cta)",
-                        color: joined ? "hsl(var(--muted-foreground))" : "white",
-                      }}
+              {communities.length === 0 && (
+                <div className="text-center py-10 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_12px_28px_-18px_rgba(30,60,120,0.8)]">
+                  <Globe className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No communities yet</p>
+                  <button onClick={() => setCreateOpen(true)} className="mt-2 text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>Be the first to create one</button>
+                </div>
+              )}
+              <div className="space-y-2">
+                {communities.map((c, i) => {
+                  const joined = joinedIds.has(c.id);
+                  const g = GRADIENTS[i % GRADIENTS.length];
+                  return (
+                    <motion.div
+                      key={c.id}
+                      variants={cardVariants}
+                      whileTap={{ scale: 0.985 }}
+                      transition={spring}
+                      onClick={() => nav(`/community/${c.id}`)}
+                      className="w-full flex items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_12px_28px_-18px_rgba(30,60,120,0.8)] cursor-pointer"
+                      style={{ willChange: "transform" }}
                     >
-                      {joined ? "Joined" : "Join"}
-                    </button>
-                  </div>
-                );
-              })}
+                      {c.avatar_url ? (
+                        <Avatar className="w-11 h-11 rounded-xl"><AvatarImage src={c.avatar_url} /><AvatarFallback>{c.name?.[0]}</AvatarFallback></Avatar>
+                      ) : (
+                        <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${g} flex items-center justify-center shrink-0`}>
+                          <Users className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="font-semibold text-sm truncate">{c.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{formatMembers(c.member_count)}</p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleJoin(c); }}
+                        className="px-3.5 h-8 rounded-full text-xs font-semibold transition-all active:scale-95"
+                        style={{
+                          background: joined ? "hsl(var(--muted))" : "var(--gradient-cta)",
+                          color: joined ? "hsl(var(--muted-foreground))" : "white",
+                        }}
+                      >
+                        {joined ? "Joined" : "Join"}
+                      </button>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </>
+          )}
+        </motion.div>
       )}
+
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="rounded-3xl border-0 max-w-sm">
