@@ -22,6 +22,16 @@ const GRADIENTS = [
   "from-teal-300 to-cyan-400",
 ];
 
+const spring = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.7 };
+const pillVariants = {
+  hidden: { opacity: 0, y: 12, scale: 0.94 },
+  show: { opacity: 1, y: 0, scale: 1, transition: spring },
+};
+const cardVariants = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: spring },
+};
+
 export default function Discover() {
   const { user } = useAuth();
   const [q, setQ] = useState("");
@@ -34,6 +44,9 @@ export default function Discover() {
   const [cname, setCName] = useState("");
   const [cdesc, setCDesc] = useState("");
   const [saving, setSaving] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filter, setFilter] = useState("For You");
   const nav = useNavigate();
 
   const loadCommunities = async () => {
