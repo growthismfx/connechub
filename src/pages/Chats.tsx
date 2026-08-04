@@ -7,7 +7,19 @@ import { Search, Plus, Pin, BellOff, MoreHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotesStrip from "@/components/NotesStrip";
 import BottomNav from "@/components/BottomNav";
+import AmbientBackdrop from "@/components/AmbientBackdrop";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
+
+const spring = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.7 };
+const storyVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.9 },
+  show: { opacity: 1, y: 0, scale: 1, transition: spring },
+};
+const rowVariants = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: spring },
+};
 
 const BASE_TABS = ["All", "Unread", "Groups", "Channels"] as const;
 type Tab = string;
@@ -196,81 +208,114 @@ export default function Chats() {
 
   return (
     <div className="min-h-screen pb-36 relative">
-      {/* reference gradient backdrop: cool blue -> white -> soft blush */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-10"
-        style={{
-          background:
-            "linear-gradient(175deg, hsl(206 96% 90%) 0%, hsl(205 100% 96%) 22%, hsl(0 0% 100%) 52%, hsl(340 70% 97%) 100%)",
-        }}
-      />
+      <AmbientBackdrop variant="chat" />
 
       {/* Header */}
-      <div className="px-6 pt-12 pb-5 flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={spring}
+        className="px-6 pt-12 pb-5 flex items-center justify-between"
+        style={{ willChange: "transform" }}
+      >
         <h1 className="text-[30px] font-bold tracking-tight">Chat</h1>
         <div className="flex items-center gap-2.5">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            transition={spring}
             onClick={() => setSearchOpen((v) => !v)}
             aria-label="Search"
-            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_6px_18px_-8px_rgba(30,60,120,0.45)] active:scale-95 transition-transform"
+            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_6px_18px_-8px_rgba(30,60,120,0.45)]"
           >
             <Search className="w-[18px] h-[18px] text-foreground" />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            transition={spring}
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="More"
-            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_6px_18px_-8px_rgba(30,60,120,0.45)] active:scale-95 transition-transform"
+            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_6px_18px_-8px_rgba(30,60,120,0.45)]"
           >
             <MoreHorizontal className="w-[18px] h-[18px] text-foreground" />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {searchOpen && (
-        <div className="px-6 pb-4 animate-fade-in">
-          <div className="flex items-center gap-3 bg-white rounded-full px-5 h-11 shadow-[0_6px_18px_-10px_rgba(30,60,120,0.5)]">
-            <Search className="w-4 h-4 text-muted-foreground" />
-            <input
-              autoFocus
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search"
-              className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-            />
-          </div>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {searchOpen && (
+          <motion.div
+            key="search"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-4">
+              <div className="flex items-center gap-3 bg-white rounded-full px-5 h-11 shadow-[0_6px_18px_-10px_rgba(30,60,120,0.5)]">
+                <Search className="w-4 h-4 text-muted-foreground" />
+                <input
+                  autoFocus
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Search"
+                  className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
 
-      {menuOpen && (
-        <div className="px-6 pb-4 animate-fade-in">
-          <div className="bg-white rounded-3xl p-2 shadow-[0_10px_30px_-14px_rgba(30,60,120,0.6)] flex flex-col">
-            {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
-              const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
-              return (
-                <button
-                  key={key}
-                  onClick={() => { setTab(key); setMenuOpen(false); }}
-                  className={`text-left text-sm px-4 py-2.5 rounded-2xl ${tab === key ? "bg-muted font-semibold" : ""}`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-            <button onClick={() => { setMenuOpen(false); createFolder(); }} className="text-left text-sm px-4 py-2.5 rounded-2xl text-muted-foreground">
-              + New folder
-            </button>
-            <button onClick={() => { setMenuOpen(false); nav("/settings"); }} className="text-left text-sm px-4 py-2.5 rounded-2xl text-muted-foreground">
-              Settings
-            </button>
-          </div>
-        </div>
-      )}
+        {menuOpen && (
+          <motion.div
+            key="menu"
+            initial={{ opacity: 0, y: -8, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.97 }}
+            transition={spring}
+            className="px-6 pb-4"
+            style={{ willChange: "transform" }}
+          >
+            <div className="bg-white rounded-3xl p-2 shadow-[0_10px_30px_-14px_rgba(30,60,120,0.6)] flex flex-col">
+              {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
+                const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => { setTab(key); setMenuOpen(false); }}
+                    className={`text-left text-sm px-4 py-2.5 rounded-2xl transition-colors ${tab === key ? "bg-muted font-semibold" : "hover:bg-muted/60"}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+              <button onClick={() => { setMenuOpen(false); createFolder(); }} className="text-left text-sm px-4 py-2.5 rounded-2xl text-muted-foreground hover:bg-muted/60">
+                + New folder
+              </button>
+              <button onClick={() => { setMenuOpen(false); nav("/settings"); }} className="text-left text-sm px-4 py-2.5 rounded-2xl text-muted-foreground hover:bg-muted/60">
+                Settings
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Stories row */}
       <div className="pl-6 pb-1 overflow-x-auto no-scrollbar">
-        <div className="flex gap-4 pr-6">
-          <button onClick={() => nav("/status")} className="flex flex-col items-center gap-2 shrink-0">
+        <motion.div
+          className="flex gap-4 pr-6"
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+        >
+          <motion.button
+            variants={storyVariants}
+            whileTap={{ scale: 0.93 }}
+            transition={spring}
+            onClick={() => nav("/status")}
+            className="flex flex-col items-center gap-2 shrink-0"
+            style={{ willChange: "transform" }}
+          >
             <div className="relative">
               <Avatar className="w-[58px] h-[58px] border-[3px] border-white shadow-[0_8px_18px_-10px_rgba(30,60,120,0.7)]">
                 <AvatarImage src={profile?.avatar_url || undefined} />
@@ -281,17 +326,25 @@ export default function Chats() {
               </span>
             </div>
             <span className="text-[12px] text-foreground/80">You</span>
-          </button>
+          </motion.button>
           {stories.map((s) => (
-            <button key={s.id} onClick={() => nav("/status")} className="flex flex-col items-center gap-2 shrink-0">
+            <motion.button
+              key={s.id}
+              variants={storyVariants}
+              whileTap={{ scale: 0.93 }}
+              transition={spring}
+              onClick={() => nav("/status")}
+              className="flex flex-col items-center gap-2 shrink-0"
+              style={{ willChange: "transform" }}
+            >
               <Avatar className="w-[58px] h-[58px] border-[3px] border-white shadow-[0_8px_18px_-10px_rgba(30,60,120,0.7)]">
                 <AvatarImage src={s.avatar_url || undefined} />
                 <AvatarFallback>{s.name?.[0]}</AvatarFallback>
               </Avatar>
               <span className="text-[12px] text-foreground/80 truncate max-w-[64px]">{s.name?.split(" ")[0]}</span>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Notes */}
@@ -301,58 +354,77 @@ export default function Chats() {
       <p className="px-6 pt-4 pb-1 text-[15px] font-semibold">Messages</p>
 
       {filtered.length === 0 && (
-        <div className="text-center py-16">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
           <p className="text-muted-foreground text-sm">No chats here yet</p>
           <button onClick={() => nav("/discover")} className="mt-2 text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>
             Find someone to message
           </button>
-        </div>
+        </motion.div>
       )}
 
-      <div className="px-4">
-        {filtered.map((r) => {
-          const unread = unreadMap[r.id] || 0;
-          return (
-            <button
-              key={r.id}
-              onClick={() => nav(`/chat/${r.id}`)}
-              className="w-full flex items-center gap-3.5 px-2 py-3 rounded-2xl active:bg-white/70 transition-colors"
-            >
-              <div className="relative shrink-0">
-                <Avatar className="w-[46px] h-[46px]">
-                  <AvatarImage src={r.other.avatar_url || undefined} />
-                  <AvatarFallback>{r.other.name?.[0]}</AvatarFallback>
-                </Avatar>
-                {r.other.is_online && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white" style={{ background: "hsl(var(--online))" }} />
-                )}
-              </div>
-              <div className="flex-1 text-left min-w-0">
-                <p className="font-semibold text-[15px] truncate leading-tight">{r.other.name}</p>
-                <p className={`text-[13px] truncate mt-0.5 ${unread > 0 ? "text-foreground/80" : "text-muted-foreground"}`}>
-                  {previewText(r.last_message)}
-                </p>
-              </div>
-              <div className="shrink-0 flex flex-col items-end gap-1.5">
-                <span className="text-[11px] text-muted-foreground">
-                  {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
-                </span>
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  {r.muted && <BellOff className="w-3 h-3" />}
-                  {r.pinned && <Pin className="w-3 h-3 fill-current" />}
-                  {unread > 0 && (
-                    <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                      {unread > 99 ? "99+" : unread}
-                    </span>
+      <motion.div
+        className="px-4"
+        initial="hidden"
+        animate="show"
+        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04, delayChildren: 0.06 } } }}
+      >
+        <AnimatePresence initial={false}>
+          {filtered.map((r) => {
+            const unread = unreadMap[r.id] || 0;
+            return (
+              <motion.button
+                key={r.id}
+                layout
+                variants={rowVariants}
+                exit={{ opacity: 0, x: -20 }}
+                whileTap={{ scale: 0.985 }}
+                transition={spring}
+                onClick={() => nav(`/chat/${r.id}`)}
+                className="w-full flex items-center gap-3.5 px-2 py-3 rounded-2xl hover:bg-white/60 active:bg-white/80 transition-colors"
+                style={{ willChange: "transform" }}
+              >
+                <div className="relative shrink-0">
+                  <Avatar className="w-[46px] h-[46px]">
+                    <AvatarImage src={r.other.avatar_url || undefined} />
+                    <AvatarFallback>{r.other.name?.[0]}</AvatarFallback>
+                  </Avatar>
+                  {r.other.is_online && (
+                    <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white" style={{ background: "hsl(var(--online))" }} />
                   )}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+                </div>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="font-semibold text-[15px] truncate leading-tight">{r.other.name}</p>
+                  <p className={`text-[13px] truncate mt-0.5 ${unread > 0 ? "text-foreground/80" : "text-muted-foreground"}`}>
+                    {previewText(r.last_message)}
+                  </p>
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <span className="text-[11px] text-muted-foreground">
+                    {r.last_message_at && formatDistanceToNow(new Date(r.last_message_at), { addSuffix: false })}
+                  </span>
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    {r.muted && <BellOff className="w-3 h-3" />}
+                    {r.pinned && <Pin className="w-3 h-3 fill-current" />}
+                    {unread > 0 && (
+                      <motion.span
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={spring}
+                        className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center"
+                      >
+                        {unread > 99 ? "99+" : unread}
+                      </motion.span>
+                    )}
+                  </span>
+                </div>
+              </motion.button>
+            );
+          })}
+        </AnimatePresence>
+      </motion.div>
 
       <BottomNav />
     </div>
   );
 }
+
