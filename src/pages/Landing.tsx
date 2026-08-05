@@ -53,8 +53,8 @@ export default function Landing() {
   return (
     <div ref={root} className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* ambient blobs */}
-      <div aria-hidden className="pointer-events-none fixed -top-40 -left-32 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-60" style={{ background: "hsl(258 100% 92%)" }} />
-      <div aria-hidden className="pointer-events-none fixed top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full blur-3xl opacity-50" style={{ background: "hsl(280 100% 92%)" }} />
+      <div aria-hidden className="pointer-events-none fixed -top-40 -left-32 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-60" style={{ background: "hsl(205 100% 90%)" }} />
+      <div aria-hidden className="pointer-events-none fixed top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full blur-3xl opacity-50" style={{ background: "hsl(340 90% 94%)" }} />
 
       {/* Nav */}
       <header className="sticky top-0 z-40 px-4 pt-4">
@@ -131,8 +131,8 @@ export default function Landing() {
 
         {/* Dark analytics band */}
         <section className="px-6">
-          <div className="gs-reveal mx-auto max-w-5xl rounded-[2rem] overflow-hidden p-7 md:p-9 relative text-primary-foreground shadow-[var(--shadow-pill)]" style={{ background: "linear-gradient(120deg, hsl(240 30% 8%), hsl(258 45% 16%))" }}>
-            <div aria-hidden className="absolute -right-24 -top-24 w-72 h-72 rounded-full blur-3xl" style={{ background: "hsl(258 100% 70% / 0.35)" }} />
+          <div className="gs-reveal mx-auto max-w-5xl rounded-[2rem] overflow-hidden p-7 md:p-9 relative text-primary-foreground shadow-[var(--shadow-pill)]" style={{ background: "linear-gradient(120deg, hsl(222 60% 10%), hsl(210 70% 20%))" }}>
+            <div aria-hidden className="absolute -right-24 -top-24 w-72 h-72 rounded-full blur-3xl" style={{ background: "hsl(199 95% 60% / 0.35)" }} />
             <div className="relative z-10 flex flex-wrap items-center gap-8">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: "hsl(0 0% 100% / 0.1)" }}>
@@ -184,7 +184,7 @@ export default function Landing() {
         {/* Bento grid */}
         <section id="features" className="px-6 py-8">
           <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-4">
-            <div className="gs-reveal rounded-[2rem] p-7 text-primary-foreground flex flex-col shadow-[var(--shadow-pill)]" style={{ background: "linear-gradient(160deg, hsl(240 30% 9%), hsl(262 40% 18%))" }}>
+            <div className="gs-reveal rounded-[2rem] p-7 text-primary-foreground flex flex-col shadow-[var(--shadow-pill)]" style={{ background: "linear-gradient(160deg, hsl(222 60% 10%), hsl(208 70% 20%))" }}>
               <ShieldCheck className="w-6 h-6" />
               <h3 className="mt-6 text-2xl font-bold tracking-tight leading-tight">Private by design</h3>
               <p className="mt-3 text-sm opacity-80 leading-relaxed">App lock, biometrics, blocking and granular privacy controls on every conversation.</p>
@@ -289,8 +289,8 @@ export default function Landing() {
 
         {/* CTA band */}
         <section id="start" className="px-6 pb-20 pt-4">
-          <div className="gs-reveal mx-auto max-w-5xl rounded-[2rem] p-8 md:p-12 text-primary-foreground relative overflow-hidden shadow-[var(--shadow-pill)]" style={{ background: "linear-gradient(120deg, hsl(240 30% 8%), hsl(258 55% 22%))" }}>
-            <div aria-hidden className="absolute -right-16 -bottom-24 w-80 h-80 rounded-full blur-3xl" style={{ background: "hsl(258 100% 70% / 0.35)" }} />
+          <div className="gs-reveal mx-auto max-w-5xl rounded-[2rem] p-8 md:p-12 text-primary-foreground relative overflow-hidden shadow-[var(--shadow-pill)]" style={{ background: "linear-gradient(120deg, hsl(222 60% 10%), hsl(206 75% 24%))" }}>
+            <div aria-hidden className="absolute -right-16 -bottom-24 w-80 h-80 rounded-full blur-3xl" style={{ background: "hsl(199 95% 60% / 0.35)" }} />
             <div className="relative z-10 max-w-xl">
               <img src={hellowIcon.url} alt="hellow app icon" width={56} height={56} loading="lazy" className="w-14 h-14 rounded-2xl" />
               <h2 className="mt-6 text-3xl md:text-4xl font-bold tracking-tight">One app. Every conversation.</h2>
