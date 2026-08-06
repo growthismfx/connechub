@@ -346,51 +346,55 @@ export default function Chat() {
 
   const wallpaper = (profile as any)?.wallpaper_url;
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative bg-background">
       {wallpaper && (
         <div className="fixed inset-0 pointer-events-none z-0" style={{ background: wallpaper.startsWith("http") ? `url(${wallpaper}) center/cover` : wallpaper, opacity: 0.5 }} />
       )}
       <div className="relative z-[1] flex flex-col flex-1 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4 bg-white/60 backdrop-blur sticky top-0 z-10">
+      <div className="flex items-center justify-between px-5 pt-12 pb-4 sticky top-0 z-10" style={{ background: "var(--gradient-ember)" }}>
         <div className="flex items-center gap-3 min-w-0">
-          <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center shrink-0">
+          <button onClick={() => nav("/chats")} className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <button onClick={() => { if (isGroup) nav(`/group/${id}/settings`); else if (!isSelf) setProfileOpen(true); }} className="flex items-center gap-3 min-w-0 text-left">
             <div className="relative shrink-0">
-              <Avatar className="w-10 h-10">
+              <Avatar className="w-11 h-11 border-2 border-white/60">
                 <AvatarImage src={other?.avatar_url || undefined} />
                 <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
               </Avatar>
               {!isGroup && other?.is_online && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
               )}
             </div>
             <div className="min-w-0">
-              <h2 className="font-bold leading-tight truncate">{other?.name || "Chat"}</h2>
-              <p className={`text-xs ${otherTyping ? "text-primary" : "text-muted-foreground"} transition-colors truncate`}>
-                {presenceLabel}
-              </p>
+              <h2 className="font-extrabold leading-tight truncate text-white text-[19px]">{other?.name || "Chat"}</h2>
+              <p className="text-xs text-white/80 transition-colors truncate">{presenceLabel}</p>
             </div>
           </button>
         </div>
         {!isSelf && !isGroup && (
           <div className="flex gap-2">
-            <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+            <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white">
               <Phone className="w-4 h-4" />
             </button>
-            <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+            <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white">
               <Video className="w-4 h-4" />
             </button>
           </div>
         )}
         {isGroup && (
-          <button onClick={() => nav(`/group/${id}/settings`)} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center" aria-label="Group settings">
-            <Users className="w-4 h-4" />
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => nav(`/group/${id}/settings`)} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white" aria-label="Group call">
+              <Phone className="w-4 h-4" />
+            </button>
+            <button onClick={() => nav(`/group/${id}/settings`)} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white" aria-label="Group settings">
+              <Users className="w-4 h-4" />
+            </button>
+          </div>
         )}
       </div>
+
 
       {/* Pinned banner */}
       {pinnedIds.size > 0 && (() => {
@@ -404,7 +408,11 @@ export default function Chat() {
         );
       })()}
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3 pb-28">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-2.5 pb-28"
+        style={{ background: "linear-gradient(180deg, hsl(18 94% 53%) 0%, hsl(14 90% 48%) 55%, hsl(12 60% 22%) 88%, hsl(20 10% 7%) 100%)" }}
+      >
         {messages.map((m) => {
           const me = m.sender_id === user?.id;
           const reacts = reactions[m.id] || [];
@@ -412,27 +420,33 @@ export default function Chat() {
           const deleted = m.deleted_for_everyone;
           return (
             <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
-              <div className="max-w-[75%] relative">
+              <div className="max-w-[78%] relative">
                 <div
                   onContextMenu={(e) => { e.preventDefault(); openActions(m); }}
                   onTouchStart={() => startLongPress(m)}
                   onTouchEnd={cancelLongPress}
                   onTouchMove={cancelLongPress}
                   onTouchCancel={cancelLongPress}
+                  onMouseDown={() => startLongPress(m)}
+                  onMouseUp={cancelLongPress}
+                  onMouseLeave={cancelLongPress}
                   onDoubleClick={() => openActions(m)}
-                  className={`px-4 py-3 rounded-3xl select-none ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"} ${deleted ? "italic opacity-70" : ""}`}
+                  className={`px-3.5 py-2.5 select-none text-white border border-white/25 backdrop-blur-md ${me ? "rounded-[22px] rounded-br-md bg-white/25" : "rounded-[22px] rounded-bl-md bg-white/15"} ${deleted ? "italic opacity-70" : ""}`}
+                  style={{ boxShadow: "0 10px 26px -16px hsl(0 0% 0% / 0.8)" }}
                 >
+
                   {isGroup && !me && !deleted && (
-                    <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--primary))" }}>
+                    <p className="text-[11px] font-semibold mb-1 text-white/85">
                       {senderMap[m.sender_id]?.name || "Member"}
                     </p>
                   )}
                   {replyMsg && !deleted && (
-                    <div className="mb-2 pl-2 border-l-2 rounded-md bg-black/5 px-2 py-1" style={{ borderColor: "hsl(var(--primary))" }}>
-                      <p className="text-[10px] font-semibold opacity-80">{senderMap[replyMsg.sender_id]?.name || (replyMsg.sender_id === user?.id ? "You" : "Reply")}</p>
+                    <div className="mb-2 pl-2 border-l-2 border-white/60 rounded-md bg-black/20 px-2 py-1">
+                      <p className="text-[10px] font-semibold opacity-90">{senderMap[replyMsg.sender_id]?.name || (replyMsg.sender_id === user?.id ? "You" : "Reply")}</p>
                       <p className="text-[11px] truncate opacity-80">{replyMsg.deleted_for_everyone ? "deleted message" : (replyMsg.content || replyMsg.message_type)}</p>
                     </div>
                   )}
+
                   {deleted ? (
                     <p className="text-sm">🚫 This message was deleted</p>
                   ) : m.message_type === "call" ? (
@@ -468,21 +482,22 @@ export default function Chat() {
                       <button
                         key={r.emoji}
                         onClick={() => { setActionTarget({ id: m.id, content: m.content || "", sender_id: m.sender_id, message_type: m.message_type, isMine: me }); }}
-                        className={`text-[11px] leading-none px-2 py-0.5 rounded-full border ${r.mine ? "bg-primary/10 border-primary/40" : "bg-white border-border/50"} shadow-sm`}
+                        className={`text-[11px] leading-none px-2 py-0.5 rounded-full border backdrop-blur ${r.mine ? "bg-white/30 border-white/60" : "bg-black/25 border-white/25"} shadow-sm text-white`}
                       >
                         <span className="mr-0.5">{r.emoji}</span>
-                        <span className="text-muted-foreground">{r.count}</span>
+                        <span className="opacity-80">{r.count}</span>
                       </button>
                     ))}
                   </div>
                 )}
-                <p className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
+                <p className={`text-[11px] text-white/70 mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
                   {pinnedIds.has(m.id) && <PinIcon className="w-3 h-3" />}
-                  {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-500" />}
+                  {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-300" />}
                   {m.edited_at && !deleted && <span className="italic">edited</span>}
                   <span>{format(new Date(m.created_at), "HH:mm")}</span>
                   {me && renderTicks(m)}
                 </p>
+
                 <button
                   onClick={() => openActions(m)}
                   className={`absolute -top-2 ${me ? "-left-7" : "-right-7"} w-6 h-6 rounded-full bg-white shadow-[var(--shadow-pill)] items-center justify-center hidden group-hover:flex`}
@@ -498,16 +513,16 @@ export default function Chat() {
 
         {otherTyping && (
           <div className="flex justify-start animate-fade-in">
-            <div className="px-4 py-3 rounded-3xl bg-[hsl(var(--bubble-them))] flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "300ms" }} />
+            <div className="px-4 py-3 rounded-3xl bg-white/15 border border-white/25 backdrop-blur flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: "300ms" }} />
             </div>
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-4 left-0 right-0 px-5">
+      <div className="fixed bottom-4 left-0 right-0 px-4">
         {(replyTo || editing) && (
           <div className="mb-2 flex items-center gap-2 bg-white rounded-2xl px-3 py-2 shadow-[var(--shadow-pill)] border border-border/40 animate-fade-in">
             <div className="w-1 h-8 rounded-full" style={{ background: "var(--gradient-cta)" }} />
@@ -522,26 +537,25 @@ export default function Chat() {
             </button>
           </div>
         )}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center gap-2 bg-white rounded-full pl-4 pr-2 h-14 shadow-[var(--shadow-pill)]">
-            <button onClick={() => fileRef.current?.click()}>
-              <Paperclip className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <input
-              value={text}
-              onChange={(e) => onTextChange(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder={editing ? "Edit your message…" : "Type your message..."}
-              className="flex-1 bg-transparent outline-none text-sm"
-            />
-            <button><Mic className="w-5 h-5 text-muted-foreground" /></button>
-          </div>
-          <button onClick={send} className="w-14 h-14 rounded-full flex items-center justify-center shadow-[var(--shadow-pill)]" style={{ background: "var(--gradient-cta)" }}>
-            <Send className="w-5 h-5 text-foreground" />
+        <div className="flex items-center gap-2 rounded-full pl-4 pr-2 h-16 border border-white/10" style={{ background: "hsl(22 12% 12% / 0.95)", backdropFilter: "blur(16px)", boxShadow: "var(--shadow-pill)" }}>
+          <button onClick={() => fileRef.current?.click()} aria-label="Attach">
+            <Paperclip className="w-5 h-5 text-white/60" />
+          </button>
+          <input
+            value={text}
+            onChange={(e) => onTextChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && send()}
+            placeholder={editing ? "Edit your message…" : "Your Message..."}
+            className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/45"
+          />
+          <button aria-label="Voice"><Mic className="w-5 h-5 text-white/60" /></button>
+          <button onClick={send} className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--gradient-cta)", boxShadow: "0 10px 24px -10px hsl(18 95% 50% / 0.9)" }}>
+            <Send className="w-5 h-5 text-white" />
           </button>
         </div>
         <input ref={fileRef} type="file" accept="image/*,video/*,audio/*,application/*" hidden onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
       </div>
+
       <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} other={other} conversationId={id} onCall={(t) => { setProfileOpen(false); startCall(t); }} />
       <MessageActionSheet
         open={!!actionTarget}

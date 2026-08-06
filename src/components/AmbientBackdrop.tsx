@@ -31,27 +31,28 @@ export default function AmbientBackdrop({ variant = "chat" }: { variant?: "chat"
 
   const base =
     variant === "explore"
-      ? "linear-gradient(180deg, hsl(205 92% 76%) 0%, hsl(203 95% 88%) 38%, hsl(0 0% 100%) 78%, hsl(340 70% 97%) 100%)"
-      : "linear-gradient(175deg, hsl(206 96% 90%) 0%, hsl(205 100% 96%) 22%, hsl(0 0% 100%) 52%, hsl(340 70% 97%) 100%)";
+      ? "linear-gradient(180deg, hsl(18 60% 12%) 0%, hsl(20 20% 8%) 45%, hsl(20 10% 6%) 100%)"
+      : "linear-gradient(175deg, hsl(18 55% 12%) 0%, hsl(20 20% 8%) 40%, hsl(20 10% 6%) 100%)";
 
   return (
     <div ref={root} aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="absolute inset-0" style={{ background: base }} />
       <div
         data-orb
-        className="absolute -top-24 -left-16 w-[420px] h-[420px] rounded-full blur-[90px] opacity-60"
-        style={{ background: "radial-gradient(circle, hsl(206 100% 72% / 0.55), transparent 70%)", willChange: "transform" }}
+        className="absolute -top-24 -left-16 w-[420px] h-[420px] rounded-full blur-[90px] opacity-70"
+        style={{ background: "radial-gradient(circle, hsl(24 96% 55% / 0.55), transparent 70%)", willChange: "transform" }}
       />
       <div
         data-orb
-        className="absolute top-1/3 -right-24 w-[380px] h-[380px] rounded-full blur-[100px] opacity-50"
-        style={{ background: "radial-gradient(circle, hsl(340 90% 82% / 0.5), transparent 70%)", willChange: "transform" }}
+        className="absolute top-1/3 -right-24 w-[380px] h-[380px] rounded-full blur-[100px] opacity-55"
+        style={{ background: "radial-gradient(circle, hsl(12 92% 50% / 0.5), transparent 70%)", willChange: "transform" }}
       />
       <div
         data-orb
         className="absolute -bottom-32 left-1/4 w-[440px] h-[440px] rounded-full blur-[110px] opacity-45"
-        style={{ background: "radial-gradient(circle, hsl(28 100% 82% / 0.45), transparent 70%)", willChange: "transform" }}
+        style={{ background: "radial-gradient(circle, hsl(32 100% 58% / 0.35), transparent 70%)", willChange: "transform" }}
       />
     </div>
   );
 }
+

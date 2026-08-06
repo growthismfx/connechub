@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Plus, Pin, BellOff, MoreHorizontal } from "lucide-react";
+import { Search, Plus, Pin, BellOff, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotesStrip from "@/components/NotesStrip";
 import BottomNav from "@/components/BottomNav";
@@ -209,66 +209,86 @@ export default function Chats() {
     <div className="min-h-screen pb-36 relative">
       <AmbientBackdrop variant="chat" />
 
-      {/* Header — bold "Chat" + round white search / more buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: -14 }}
+      {/* Ember header panel */}
+      <motion.section
+        initial={{ opacity: 0, y: -18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={spring}
-        className="px-6 pt-12 pb-5 flex items-center justify-between"
-        style={{ willChange: "transform" }}
+        className="relative overflow-hidden rounded-b-[36px] px-5 pt-12 pb-6"
+        style={{ background: "var(--gradient-ember)", boxShadow: "0 26px 60px -30px hsl(16 95% 45% / 0.9)", willChange: "transform" }}
       >
-        <h1 className="text-[32px] font-bold tracking-tight leading-none">Chat</h1>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 flex items-center gap-3 rounded-full h-11 px-4 bg-black/15 backdrop-blur-md border border-white/25">
+            <Search className="w-4 h-4 text-white/85" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search"
+              className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/70"
+            />
+          </div>
           <motion.button
             whileTap={{ scale: 0.9 }}
-            whileHover={{ y: -1 }}
-            transition={spring}
-            onClick={() => setSearchOpen((v) => !v)}
-            aria-label="Search"
-            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_10px_22px_-12px_rgba(20,60,120,0.7)]"
-            style={{ willChange: "transform" }}
-          >
-            <Search className="w-[18px] h-[18px] text-foreground" />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            whileHover={{ y: -1 }}
             transition={spring}
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="More"
-            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_10px_22px_-12px_rgba(20,60,120,0.7)]"
+            className="w-11 h-11 rounded-full bg-black/15 backdrop-blur-md border border-white/25 flex items-center justify-center"
             style={{ willChange: "transform" }}
           >
-            <MoreHorizontal className="w-[18px] h-[18px] text-foreground" />
+            <ChevronDown className={`w-5 h-5 text-white transition-transform ${menuOpen ? "rotate-180" : ""}`} />
           </motion.button>
         </div>
-      </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spring, delay: 0.06 }}
+          className="mt-6 text-[34px] leading-[1.05] font-extrabold tracking-tight text-white"
+          style={{ textShadow: "0 6px 24px hsl(16 90% 30% / 0.55)" }}
+        >
+          <span className="block text-white/85">Let's Stay</span>
+          <span className="block">Connected</span>
+        </motion.h1>
+
+        {/* Story rail */}
+        <div ref={storyRef} className="mt-5 -mx-5 px-5 overflow-x-auto no-scrollbar">
+          <div className="flex gap-4">
+            <motion.button
+              data-story
+              whileTap={{ scale: 0.92 }}
+              transition={spring}
+              onClick={() => nav("/status")}
+              className="flex flex-col items-center gap-2 shrink-0"
+              style={{ willChange: "transform" }}
+            >
+              <div className="w-[58px] h-[58px] rounded-full border-2 border-dashed border-white/70 bg-white/15 flex items-center justify-center">
+                <Plus className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-[12px] font-semibold text-white">Add</span>
+            </motion.button>
+
+            {stories.map((s) => (
+              <motion.button
+                key={s.id}
+                data-story
+                whileTap={{ scale: 0.92 }}
+                transition={spring}
+                onClick={() => nav("/status")}
+                className="flex flex-col items-center gap-2 shrink-0"
+                style={{ willChange: "transform" }}
+              >
+                <Avatar className="w-[58px] h-[58px] border-2 border-white/70">
+                  <AvatarImage src={s.avatar_url || undefined} />
+                  <AvatarFallback>{s.name?.[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-[12px] font-semibold text-white truncate max-w-[64px]">{s.name?.split(" ")[0]}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </motion.section>
 
       <AnimatePresence initial={false}>
-        {searchOpen && (
-          <motion.div
-            key="search"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <div className="px-6 pb-4">
-              <div className="flex items-center gap-3 bg-white rounded-full px-5 h-11 shadow-[0_10px_22px_-14px_rgba(20,60,120,0.7)]">
-                <Search className="w-4 h-4 text-muted-foreground" />
-                <input
-                  autoFocus
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search"
-                  className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-                />
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {menuOpen && (
           <motion.div
             key="menu"
@@ -276,10 +296,10 @@ export default function Chats() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={spring}
-            className="px-6 pb-4"
+            className="px-5 pt-4"
             style={{ willChange: "transform" }}
           >
-            <div className="bg-white rounded-3xl p-2 shadow-[0_16px_34px_-18px_rgba(20,60,120,0.75)] flex flex-col">
+            <div className="bg-white rounded-3xl p-2 shadow-[var(--shadow-pill)] flex flex-col">
               {[...BASE_TABS, ...folders.map((f) => f.name)].map((label, idx) => {
                 const key = idx < BASE_TABS.length ? label : folders[idx - BASE_TABS.length].id;
                 return (
@@ -303,59 +323,7 @@ export default function Chats() {
         )}
       </AnimatePresence>
 
-      {/* Story rail — big circular avatars with names underneath */}
-      <div ref={storyRef} className="pl-6 pb-1 overflow-x-auto no-scrollbar">
-        <div className="flex gap-4 pr-6">
-          <motion.button
-            data-story
-            whileTap={{ scale: 0.92 }}
-            whileHover={{ y: -2 }}
-            transition={spring}
-            onClick={() => nav("/status")}
-            className="flex flex-col items-center gap-2 shrink-0"
-            style={{ willChange: "transform" }}
-          >
-            <div className="relative">
-              <Avatar className="w-[62px] h-[62px] border-[3px] border-white shadow-[0_12px_22px_-12px_rgba(20,60,120,0.8)]">
-                <AvatarImage src={profile?.avatar_url || undefined} />
-                <AvatarFallback>{profile?.name?.[0] || "U"}</AvatarFallback>
-              </Avatar>
-              <span
-                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white text-white"
-                style={{ background: "var(--gradient-cta)" }}
-              >
-                <Plus className="w-3 h-3" />
-              </span>
-            </div>
-            <span className="text-[12px] text-foreground/75">You</span>
-          </motion.button>
-
-          {stories.map((s) => (
-            <motion.button
-              key={s.id}
-              data-story
-              whileTap={{ scale: 0.92 }}
-              whileHover={{ y: -2 }}
-              transition={spring}
-              onClick={() => nav("/status")}
-              className="flex flex-col items-center gap-2 shrink-0"
-              style={{ willChange: "transform" }}
-            >
-              <div className="rounded-full p-[2.5px]" style={{ background: "var(--gradient-cta)" }}>
-                <Avatar className="w-[58px] h-[58px] border-[2.5px] border-white">
-                  <AvatarImage src={s.avatar_url || undefined} />
-                  <AvatarFallback>{s.name?.[0]}</AvatarFallback>
-                </Avatar>
-              </div>
-              <span className="text-[12px] text-foreground/75 truncate max-w-[64px]">{s.name?.split(" ")[0]}</span>
-            </motion.button>
-          ))}
-        </div>
-      </div>
-
       <NotesStrip />
-
-      <p className="px-6 pt-4 pb-1 text-[15px] font-semibold">Messages</p>
 
       {filtered.length === 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
@@ -367,7 +335,7 @@ export default function Chats() {
       )}
 
       <motion.div
-        className="px-4"
+        className="px-3 pt-3"
         initial="hidden"
         animate="show"
         variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04, delayChildren: 0.06 } } }}
@@ -384,24 +352,24 @@ export default function Chats() {
                 whileTap={{ scale: 0.985 }}
                 transition={spring}
                 onClick={() => nav(`/chat/${r.id}`)}
-                className="w-full flex items-center gap-3.5 px-2 py-3 rounded-2xl hover:bg-white/60 active:bg-white/80 transition-colors"
+                className="w-full flex items-center gap-3.5 px-3 py-3.5 rounded-2xl hover:bg-white/5 active:bg-white/10 transition-colors border-b border-white/5"
                 style={{ willChange: "transform" }}
               >
                 <div className="relative shrink-0">
-                  <Avatar className="w-[48px] h-[48px]">
+                  <Avatar className="w-[46px] h-[46px]">
                     <AvatarImage src={r.other.avatar_url || undefined} />
                     <AvatarFallback>{r.other.name?.[0]}</AvatarFallback>
                   </Avatar>
                   {r.other.is_online && (
                     <span
-                      className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white"
+                      className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background"
                       style={{ background: "hsl(var(--online))" }}
                     />
                   )}
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="font-semibold text-[15px] truncate leading-tight">{r.other.name}</p>
-                  <p className={`text-[13px] truncate mt-0.5 ${unread > 0 ? "text-foreground/80" : "text-muted-foreground"}`}>
+                  <p className="font-bold text-[15px] truncate leading-tight text-foreground">{r.other.name}</p>
+                  <p className={`text-[13px] truncate mt-0.5 ${unread > 0 ? "text-foreground/85" : "text-muted-foreground"}`}>
                     {previewText(r.last_message)}
                   </p>
                 </div>
@@ -417,7 +385,8 @@ export default function Chats() {
                         initial={{ scale: 0.5, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={spring}
-                        className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center"
+                        className="min-w-[18px] h-[18px] px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                        style={{ background: "var(--gradient-cta)" }}
                       >
                         {unread > 99 ? "99+" : unread}
                       </motion.span>
@@ -434,3 +403,4 @@ export default function Chats() {
     </div>
   );
 }
+
