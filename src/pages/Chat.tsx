@@ -512,16 +512,16 @@ export default function Chat() {
 
         {otherTyping && (
           <div className="flex justify-start animate-fade-in">
-            <div className="px-4 py-3 rounded-3xl bg-[hsl(var(--bubble-them))] flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "300ms" }} />
+            <div className="px-4 py-3 rounded-3xl bg-white/15 border border-white/25 backdrop-blur flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: "300ms" }} />
             </div>
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-4 left-0 right-0 px-5">
+      <div className="fixed bottom-4 left-0 right-0 px-4">
         {(replyTo || editing) && (
           <div className="mb-2 flex items-center gap-2 bg-white rounded-2xl px-3 py-2 shadow-[var(--shadow-pill)] border border-border/40 animate-fade-in">
             <div className="w-1 h-8 rounded-full" style={{ background: "var(--gradient-cta)" }} />
@@ -536,26 +536,25 @@ export default function Chat() {
             </button>
           </div>
         )}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center gap-2 bg-white rounded-full pl-4 pr-2 h-14 shadow-[var(--shadow-pill)]">
-            <button onClick={() => fileRef.current?.click()}>
-              <Paperclip className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <input
-              value={text}
-              onChange={(e) => onTextChange(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder={editing ? "Edit your message…" : "Type your message..."}
-              className="flex-1 bg-transparent outline-none text-sm"
-            />
-            <button><Mic className="w-5 h-5 text-muted-foreground" /></button>
-          </div>
-          <button onClick={send} className="w-14 h-14 rounded-full flex items-center justify-center shadow-[var(--shadow-pill)]" style={{ background: "var(--gradient-cta)" }}>
-            <Send className="w-5 h-5 text-foreground" />
+        <div className="flex items-center gap-2 rounded-full pl-4 pr-2 h-16 border border-white/10" style={{ background: "hsl(22 12% 12% / 0.95)", backdropFilter: "blur(16px)", boxShadow: "var(--shadow-pill)" }}>
+          <button onClick={() => fileRef.current?.click()} aria-label="Attach">
+            <Paperclip className="w-5 h-5 text-white/60" />
+          </button>
+          <input
+            value={text}
+            onChange={(e) => onTextChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && send()}
+            placeholder={editing ? "Edit your message…" : "Your Message..."}
+            className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/45"
+          />
+          <button aria-label="Voice"><Mic className="w-5 h-5 text-white/60" /></button>
+          <button onClick={send} className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--gradient-cta)", boxShadow: "0 10px 24px -10px hsl(18 95% 50% / 0.9)" }}>
+            <Send className="w-5 h-5 text-white" />
           </button>
         </div>
         <input ref={fileRef} type="file" accept="image/*,video/*,audio/*,application/*" hidden onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
       </div>
+
       <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} other={other} conversationId={id} onCall={(t) => { setProfileOpen(false); startCall(t); }} />
       <MessageActionSheet
         open={!!actionTarget}
