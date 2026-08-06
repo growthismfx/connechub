@@ -436,16 +436,17 @@ export default function Chat() {
                 >
 
                   {isGroup && !me && !deleted && (
-                    <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--primary))" }}>
+                    <p className="text-[11px] font-semibold mb-1 text-white/85">
                       {senderMap[m.sender_id]?.name || "Member"}
                     </p>
                   )}
                   {replyMsg && !deleted && (
-                    <div className="mb-2 pl-2 border-l-2 rounded-md bg-black/5 px-2 py-1" style={{ borderColor: "hsl(var(--primary))" }}>
-                      <p className="text-[10px] font-semibold opacity-80">{senderMap[replyMsg.sender_id]?.name || (replyMsg.sender_id === user?.id ? "You" : "Reply")}</p>
+                    <div className="mb-2 pl-2 border-l-2 border-white/60 rounded-md bg-black/20 px-2 py-1">
+                      <p className="text-[10px] font-semibold opacity-90">{senderMap[replyMsg.sender_id]?.name || (replyMsg.sender_id === user?.id ? "You" : "Reply")}</p>
                       <p className="text-[11px] truncate opacity-80">{replyMsg.deleted_for_everyone ? "deleted message" : (replyMsg.content || replyMsg.message_type)}</p>
                     </div>
                   )}
+
                   {deleted ? (
                     <p className="text-sm">🚫 This message was deleted</p>
                   ) : m.message_type === "call" ? (
