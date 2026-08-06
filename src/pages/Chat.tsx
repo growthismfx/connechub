@@ -481,21 +481,22 @@ export default function Chat() {
                       <button
                         key={r.emoji}
                         onClick={() => { setActionTarget({ id: m.id, content: m.content || "", sender_id: m.sender_id, message_type: m.message_type, isMine: me }); }}
-                        className={`text-[11px] leading-none px-2 py-0.5 rounded-full border ${r.mine ? "bg-primary/10 border-primary/40" : "bg-white border-border/50"} shadow-sm`}
+                        className={`text-[11px] leading-none px-2 py-0.5 rounded-full border backdrop-blur ${r.mine ? "bg-white/30 border-white/60" : "bg-black/25 border-white/25"} shadow-sm text-white`}
                       >
                         <span className="mr-0.5">{r.emoji}</span>
-                        <span className="text-muted-foreground">{r.count}</span>
+                        <span className="opacity-80">{r.count}</span>
                       </button>
                     ))}
                   </div>
                 )}
-                <p className={`text-xs text-muted-foreground mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
+                <p className={`text-[11px] text-white/70 mt-1 flex items-center gap-1 ${me ? "justify-end" : ""}`}>
                   {pinnedIds.has(m.id) && <PinIcon className="w-3 h-3" />}
-                  {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-500" />}
+                  {starred.has(m.id) && <Star className="w-3 h-3 fill-current text-yellow-300" />}
                   {m.edited_at && !deleted && <span className="italic">edited</span>}
                   <span>{format(new Date(m.created_at), "HH:mm")}</span>
                   {me && renderTicks(m)}
                 </p>
+
                 <button
                   onClick={() => openActions(m)}
                   className={`absolute -top-2 ${me ? "-left-7" : "-right-7"} w-6 h-6 rounded-full bg-white shadow-[var(--shadow-pill)] items-center justify-center hidden group-hover:flex`}
