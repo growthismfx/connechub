@@ -225,14 +225,15 @@
 
 /* Ember (default) surface mapping — hardcoded white surfaces become dark glass */
 html:not([class*="theme-"]) .bg-white,
-html:not([class*="theme-"]) [class*="bg-white"],
+html:not([class*="theme-"]) [class*="bg-white"]:not([class*="bg-white/"]),
 .theme-default .bg-white,
-.theme-default [class*="bg-white"] {
+.theme-default [class*="bg-white"]:not([class*="bg-white/"]) {
   background: hsl(22 12% 13% / 0.92) !important;
   color: hsl(30 30% 97%);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
 }
+
 
 
 @layer base {
