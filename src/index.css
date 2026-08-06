@@ -91,7 +91,7 @@
     --gradient-page: linear-gradient(135deg, hsl(220 60% 96%), hsl(280 50% 96%));
   }
   .theme-glass .bg-white,
-  .theme-glass [class*="bg-white"] {
+  .theme-glass [class*="bg-white"]:not([class*="bg-white/"]) {
     background: rgba(255, 255, 255, 0.55) !important;
     backdrop-filter: blur(18px) saturate(180%);
     -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -142,7 +142,7 @@
     --gradient-page: linear-gradient(180deg, hsl(230 30% 8%), hsl(250 25% 12%));
   }
   .theme-midnight .bg-white,
-  .theme-midnight [class*="bg-white"] {
+  .theme-midnight [class*="bg-white"]:not([class*="bg-white/"]) {
     background: hsl(230 20% 14%) !important;
     color: hsl(220 20% 95%);
   }
@@ -174,7 +174,7 @@
     --gradient-page: linear-gradient(180deg, hsl(280 45% 8%), hsl(320 45% 10%));
     --shadow-bubble: 0 0 24px hsl(320 100% 60% / 0.5);
   }
-  .theme-neon .bg-white, .theme-neon [class*="bg-white"] { background: hsl(280 40% 14%) !important; color: hsl(300 100% 95%); }
+  .theme-neon .bg-white, .theme-neon [class*="bg-white"]:not([class*="bg-white/"]):not([class*="bg-white/"]) { background: hsl(280 40% 14%) !important; color: hsl(300 100% 95%); }
 
   /* Material You */
   .theme-material {
