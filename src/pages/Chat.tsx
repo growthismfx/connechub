@@ -408,7 +408,11 @@ export default function Chat() {
         );
       })()}
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3 pb-28">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-2.5 pb-28"
+        style={{ background: "linear-gradient(180deg, hsl(18 94% 53%) 0%, hsl(14 90% 48%) 55%, hsl(12 60% 22%) 88%, hsl(20 10% 7%) 100%)" }}
+      >
         {messages.map((m) => {
           const me = m.sender_id === user?.id;
           const reacts = reactions[m.id] || [];
@@ -416,16 +420,21 @@ export default function Chat() {
           const deleted = m.deleted_for_everyone;
           return (
             <div key={m.id} className={`group flex gap-2 ${me ? "justify-end" : "justify-start"} animate-fade-in`}>
-              <div className="max-w-[75%] relative">
+              <div className="max-w-[78%] relative">
                 <div
                   onContextMenu={(e) => { e.preventDefault(); openActions(m); }}
                   onTouchStart={() => startLongPress(m)}
                   onTouchEnd={cancelLongPress}
                   onTouchMove={cancelLongPress}
                   onTouchCancel={cancelLongPress}
+                  onMouseDown={() => startLongPress(m)}
+                  onMouseUp={cancelLongPress}
+                  onMouseLeave={cancelLongPress}
                   onDoubleClick={() => openActions(m)}
-                  className={`px-4 py-3 rounded-3xl select-none ${me ? "bubble-me text-foreground" : "bg-[hsl(var(--bubble-them))] text-foreground"} ${deleted ? "italic opacity-70" : ""}`}
+                  className={`px-3.5 py-2.5 select-none text-white border border-white/25 backdrop-blur-md ${me ? "rounded-[22px] rounded-br-md bg-white/25" : "rounded-[22px] rounded-bl-md bg-white/15"} ${deleted ? "italic opacity-70" : ""}`}
+                  style={{ boxShadow: "0 10px 26px -16px hsl(0 0% 0% / 0.8)" }}
                 >
+
                   {isGroup && !me && !deleted && (
                     <p className="text-[11px] font-semibold mb-1" style={{ color: "hsl(var(--primary))" }}>
                       {senderMap[m.sender_id]?.name || "Member"}
