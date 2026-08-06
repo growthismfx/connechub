@@ -346,51 +346,55 @@ export default function Chat() {
 
   const wallpaper = (profile as any)?.wallpaper_url;
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative bg-background">
       {wallpaper && (
         <div className="fixed inset-0 pointer-events-none z-0" style={{ background: wallpaper.startsWith("http") ? `url(${wallpaper}) center/cover` : wallpaper, opacity: 0.5 }} />
       )}
       <div className="relative z-[1] flex flex-col flex-1 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4 bg-white/60 backdrop-blur sticky top-0 z-10">
+      <div className="flex items-center justify-between px-5 pt-12 pb-4 sticky top-0 z-10" style={{ background: "var(--gradient-ember)" }}>
         <div className="flex items-center gap-3 min-w-0">
-          <button onClick={() => nav("/chats")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center shrink-0">
+          <button onClick={() => nav("/chats")} className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <button onClick={() => { if (isGroup) nav(`/group/${id}/settings`); else if (!isSelf) setProfileOpen(true); }} className="flex items-center gap-3 min-w-0 text-left">
             <div className="relative shrink-0">
-              <Avatar className="w-10 h-10">
+              <Avatar className="w-11 h-11 border-2 border-white/60">
                 <AvatarImage src={other?.avatar_url || undefined} />
                 <AvatarFallback>{other?.name?.[0]}</AvatarFallback>
               </Avatar>
               {!isGroup && other?.is_online && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white animate-pulse" style={{ background: "hsl(var(--online, 142 71% 45%))" }} />
               )}
             </div>
             <div className="min-w-0">
-              <h2 className="font-bold leading-tight truncate">{other?.name || "Chat"}</h2>
-              <p className={`text-xs ${otherTyping ? "text-primary" : "text-muted-foreground"} transition-colors truncate`}>
-                {presenceLabel}
-              </p>
+              <h2 className="font-extrabold leading-tight truncate text-white text-[19px]">{other?.name || "Chat"}</h2>
+              <p className="text-xs text-white/80 transition-colors truncate">{presenceLabel}</p>
             </div>
           </button>
         </div>
         {!isSelf && !isGroup && (
           <div className="flex gap-2">
-            <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+            <button onClick={() => startCall("voice")} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white">
               <Phone className="w-4 h-4" />
             </button>
-            <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center">
+            <button onClick={() => startCall("video")} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white">
               <Video className="w-4 h-4" />
             </button>
           </div>
         )}
         {isGroup && (
-          <button onClick={() => nav(`/group/${id}/settings`)} className="w-10 h-10 rounded-full bg-white shadow-[var(--shadow-pill)] flex items-center justify-center" aria-label="Group settings">
-            <Users className="w-4 h-4" />
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => nav(`/group/${id}/settings`)} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white" aria-label="Group call">
+              <Phone className="w-4 h-4" />
+            </button>
+            <button onClick={() => nav(`/group/${id}/settings`)} className="w-10 h-10 rounded-full bg-black/15 border border-white/30 backdrop-blur flex items-center justify-center text-white" aria-label="Group settings">
+              <Users className="w-4 h-4" />
+            </button>
+          </div>
         )}
       </div>
+
 
       {/* Pinned banner */}
       {pinnedIds.size > 0 && (() => {
