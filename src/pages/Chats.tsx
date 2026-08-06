@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Plus, Pin, BellOff, MoreHorizontal } from "lucide-react";
+import { Search, Plus, Pin, BellOff, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotesStrip from "@/components/NotesStrip";
 import BottomNav from "@/components/BottomNav";
